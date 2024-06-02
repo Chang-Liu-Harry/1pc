@@ -11,7 +11,7 @@ import { createClient } from '@supabase/supabase-js';
 import { clerkClient } from "@clerk/nextjs";
 import { scheduler } from "timers/promises";
 import prisma from "@/lib/prismadb";
-import { Prisma, Role } from "@prisma/client";
+import { Mind, Prisma, Role } from "@prisma/client";
 
 
 export const maxDuration = 25;
@@ -78,7 +78,7 @@ const generateImage = async (prompt: string) => {
   }
 }
 
-const generateTextMancerPro = async (prompt: string, conversationHistory: ChatMessage[]) => {
+const generateTextMancerPro = async (mind: Mind, userName: string, prompt: string, conversationHistory: ChatMessage[]) => {
   let response = "";
   const data = {
     messages: [
@@ -86,17 +86,18 @@ const generateTextMancerPro = async (prompt: string, conversationHistory: ChatMe
       {
         role: "user",
         content: prompt,
-        name: "chang",
+        name: userName,
       }
     ],
     response_config: {
-      description: "\
-      Scenario:The university, and the room; \
-      Personality: Lydia is sexy, spicy, she doesn't get along very well with you, \
-      she is a gal/gyaru, she likes fashion and is one of the most popular girls in class;\
-      ",
+      description: mind.instructions,
+      // "\
+      // Scenario:The university, and the room; \
+      // Personality: Lydia is sexy, spicy, she doesn't get along very well with you, \
+      // she is a gal/gyaru, she likes fashion and is one of the most popular girls in class;\
+      // ",
       role: "assistant",
-      name: "Lydia",
+      name: mind.name,
     },
     model: "mythomax"
   };
@@ -114,16 +115,17 @@ const generateTextMancerPro = async (prompt: string, conversationHistory: ChatMe
   } catch (error) {
     console.error('Error during text generation:', error);
   }
-  
+  console.log(data)
   return response;
 };
 
 interface ChatMessage {
   role: 'user' | 'system' | 'assistant';
   content: string;
+  name?: string;
 }
 
-function parseChatMessages(chatText: string): ChatMessage[] {
+function parseChatMessages(chatText: string, userName: string, mindName: string): ChatMessage[] {
   const lines = chatText.split('\n'); // Split text into lines
   const messages: ChatMessage[] = [];
 
@@ -131,17 +133,20 @@ function parseChatMessages(chatText: string): ChatMessage[] {
       if (line.startsWith('User:')) {
           messages.push({
               role: 'user',
-              content: line.slice(5).trim() // Remove the 'User:' part
+              content: line.slice(5).trim(), // Remove the 'User:' part
+              name: userName,
           });
       } else if (line.includes('http://') || line.includes('https://')) {
           messages.push({
               role: 'system',
-              content: line.trim()
+              content: line.trim(),
+              name: "system",
           });
       } else if (line.trim().length > 0) {
           messages.push({
               role: 'assistant',
-              content: line.trim()
+              content: line.trim(),
+              name: mindName,
           });
       }
   });
@@ -149,9 +154,54 @@ function parseChatMessages(chatText: string): ChatMessage[] {
   return messages;
 }
 
+// subsciption status caching
+
+interface SubscriptionCacheEntry {
+  isPro: boolean;
+  timestamp: number;
+}
+
+interface SubscriptionCache {
+  [userId: string]: SubscriptionCacheEntry;
+}
+
+const subscriptionCache: SubscriptionCache = {};
+
+function getCacheKey(userId: string): string {
+  return `subscription-${userId}`;
+}
+
+async function checkSubscription(userId: string): Promise<boolean> {
+  const cacheKey = getCacheKey(userId);
+  const currentTime = Date.now();
+  const cacheEntry = subscriptionCache[cacheKey];
+
+  // Check if cache exists and is within 24 hours
+  if (cacheEntry && (currentTime - cacheEntry.timestamp < 86400000)) {
+    console.log('Returning cached subscription status');
+    return cacheEntry.isPro;
+  }
+
+  console.time('Check subscription in DB');
+  const subscription = await prismadb.userSubscription.findFirst({
+    where: { userId: userId },
+  });
+  const isPro = subscription && subscription.stripeCurrentPeriodEnd ? new Date() < new Date(subscription.stripeCurrentPeriodEnd) : false;
+  console.timeEnd('Check subscription in DB');
+
+  // Update cache
+  subscriptionCache[cacheKey] = {
+    isPro: isPro,
+    timestamp: currentTime
+  };
+
+  return isPro;
+}
+
 export async function POST(request: Request, { params }: { params: { chatId: string } }) {
-  var Readable = require("stream").Readable;
+  const Readable = require("stream").Readable;
   try {
+    console.time('Total request handling time');
     const req = await request.json();
     const prompt = req.prompt;
 
@@ -163,25 +213,23 @@ export async function POST(request: Request, { params }: { params: { chatId: str
     }
 
     const identifier = request.url + "-" + user.id;
-    const { success } = await rateLimit(identifier);
-    if (!success) {
+
+    console.time('Rate limit and subscription check');
+    const [rateLimitResult, isPro] = await Promise.all([
+      rateLimit(identifier),
+      checkSubscription(user.id)
+    ]);
+    console.timeEnd('Rate limit and subscription check');
+
+    if (!rateLimitResult.success) {
       console.log('Rate limit exceeded for user:', user.id);
       return new NextResponse("Rate limit exceeded", { status: 429 });
     }
 
-    const subscription = await prismadb.userSubscription.findFirst({
-      where: { userId: user.id },
-    });
-
-    let isPro = false;
-    if (subscription && subscription.stripeCurrentPeriodEnd) {
-      const periodEndDate = new Date(subscription.stripeCurrentPeriodEnd);
-      const currentDate = new Date();
-      isPro = currentDate < periodEndDate;
-    }
-    console.log('User subscription status - isPro:', isPro);
-
-    const mind = await prismadb.mind.update({
+    console.log('User subscription status:', isPro);
+    
+    console.time('Update mind in DB');
+    const mindUpdatePromise = prismadb.mind.update({
       where: { id: params.chatId },
       data: {
         messages: {
@@ -189,25 +237,30 @@ export async function POST(request: Request, { params }: { params: { chatId: str
             role: Role.user,
             type: "text",
             content: prompt,
-            name: "Chang",
+            name: user.username ? user.username : user.id,
             userId : user.id,
           },
         },
       },
     });
+    console.timeEnd('Update mind in DB');
+
+    const numberOfChatPromise = prismadb.message.count({
+      where: { userId: user.id },
+    });
+
+    const [mind, numberOfChat] = await Promise.all([mindUpdatePromise, numberOfChatPromise]);
+    
+    console.log('Number of chats:', numberOfChat);
 
     if (!mind) {
       console.log('Mind not found for chatId:', params.chatId);
       return new NextResponse("Mind not found", { status: 404 });
     }
 
-    const numberOfChat = await prismadb.message.count({
-      where: { userId: user.id },
-    });
-
-    if (numberOfChat >= 15 && !isPro) {
+    if (numberOfChat >= 30 && !isPro) {
       let s = new Readable();
-      let response = "Oops, my dear. I got something else to do now";
+      let response = "Sorry, I really want to talk to you 😔 but it seems you have reached the limit of free chat. Could you please subscribe the premium plan which does not cost much at all to continue chatting with me? ";
       s.push(response);
       s.push(null);
 
@@ -227,6 +280,7 @@ export async function POST(request: Request, { params }: { params: { chatId: str
       });
 
       console.log('Message limit exceeded for non-premium user:', user.id);
+      console.timeEnd('Total request handling time');
       return new StreamingTextResponse(s);
     }
 
@@ -241,7 +295,9 @@ export async function POST(request: Request, { params }: { params: { chatId: str
     };
 
     const memoryManager = await MemoryManager.getInstance();
+    console.time('Read latest history');
     let records = await memoryManager.readLatestHistory(mindKey);
+    console.timeEnd('Read latest history');
     //console.log('Fetched records:', records);
 
     if (records.length === 0) {
@@ -252,14 +308,15 @@ export async function POST(request: Request, { params }: { params: { chatId: str
     //const recentChatHistory = await memoryManager.readLatestHistory(mindKey);
     //console.log('Recent chat history:', recentChatHistory);
     
+    console.time('Parse chat messages');
+    let relevantHistory: ChatMessage[] = parseChatMessages(records,(user.username?user.username:user.id),mind.name) || [];
+    console.timeEnd('Parse chat messages');
     
-    
-  let relevantHistory: ChatMessage[] = parseChatMessages(records) || [];
-  if (relevantHistory) {
+    if (relevantHistory) {
       console.log('Relevant history for the conversation:', relevantHistory);
-  } else {
+    } else {
       console.log('No valid history could be processed.');
-  }
+    }
 
     if (type == "image") {
       if (!isPro) {
@@ -267,9 +324,12 @@ export async function POST(request: Request, { params }: { params: { chatId: str
         s.push("Only paid user could generate images");
         s.push(null);
         console.log('Non-premium user attempted to generate an image.');
+        console.timeEnd('Total request handling time');
         return new StreamingTextResponse(s);
       }
+      console.time('Generate image');
       const image = await generateImage(prompt);
+      console.timeEnd('Generate image');
       let s = new Readable();
       if (image) {
         s.push(image);
@@ -289,6 +349,7 @@ export async function POST(request: Request, { params }: { params: { chatId: str
           },
         });
         console.log('Generated image for user:', image);
+        console.timeEnd('Total request handling time');
         return new StreamingTextResponse(s);
       } else {
         let errorContent = "Error when generating images";
@@ -309,10 +370,13 @@ export async function POST(request: Request, { params }: { params: { chatId: str
           },
         });
         console.error('Error generating image for user.');
+        console.timeEnd('Total request handling time');
         return new StreamingTextResponse(s);
       }
     } else {
-      const response = await generateTextMancerPro(prompt, relevantHistory);
+      console.time('Generate text');
+      const response = await generateTextMancerPro(mind,(user.username?user.username:user.id),prompt, relevantHistory);
+      console.timeEnd('Generate text');
       await memoryManager.writeToHistory("" + response.trim(), mindKey);
 
       let s = new Readable();
@@ -326,7 +390,7 @@ export async function POST(request: Request, { params }: { params: { chatId: str
               create: {
                 role: Role.system,
                 content: response.trim(),
-                name: "Lydia",
+                name: mind.name,
                 type: "text",
                 //type: "text",
                 userId: user.id,
@@ -337,10 +401,13 @@ export async function POST(request: Request, { params }: { params: { chatId: str
         });
       }
       console.log('Generated text response for user:', response);
+      console.timeEnd('Total request handling time');
       return new StreamingTextResponse(s);
     }
   } catch (error) {
     console.error('Error during request handling:', error);
+    console.timeEnd('Total request handling time');
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
+
