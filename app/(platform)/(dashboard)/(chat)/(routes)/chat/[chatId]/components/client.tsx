@@ -10,6 +10,7 @@ import { ChatHeader } from "@/components/chat-header";
 import { ChatMessages } from "@/components/chat-messages";
 import { ChatMessageProps } from "@/components/chat-message";
 import { useProModal } from "@/hooks/use-pro-modal";
+
 interface ChatClientProps {
   mind: Mind & {
     messages: Message[];
@@ -20,6 +21,14 @@ interface ChatClientProps {
   isPro: boolean;
 };
 
+const mapMessagesToChatProps = (messages: Message[]): ChatMessageProps[] => {
+  return messages.map(message => ({
+    role: message.role as "user" | "system", // Cast to expected role type
+    type: message.type,
+    content: message.content,
+  }));
+};
+
 export const ChatClient = ({
   mind,
   isPro
@@ -27,7 +36,7 @@ export const ChatClient = ({
   const router = useRouter();
   const proModal = useProModal()
 
-  const [messages, setMessages] = useState<ChatMessageProps[]>(mind.messages);
+  const [messages, setMessages] = useState<ChatMessageProps[]>(mapMessagesToChatProps(mind.messages));
   const {
     input,
     isLoading,
@@ -37,7 +46,6 @@ export const ChatClient = ({
   } = useCompletion({
     api: `/api/chat/${mind.id}`,
     onFinish(_prompt, completion) {
-      // TODO: ensure a better check flow
       const systemMessage: ChatMessageProps = {
         role: "system",
         type: "text",
@@ -53,11 +61,12 @@ export const ChatClient = ({
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     if (!isPro && messages.length >= 4) {
-      proModal.onOpen()
+      proModal.onOpen();
+      return;
     }
+
     const userMessage: ChatMessageProps = {
       role: "user",
-      // User message type should always be text
       type: "text",
       content: input
     };

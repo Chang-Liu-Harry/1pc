@@ -182,7 +182,6 @@ const generateImage = async (prompt: string) => {
 }
 // Text Generation
 
-
 interface Message {
   role: string;
   content: string;

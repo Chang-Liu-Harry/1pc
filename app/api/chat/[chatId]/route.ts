@@ -245,6 +245,7 @@ export async function POST(request: Request, { params }: { params: { chatId: str
     });
     console.timeEnd('Update mind in DB');
 
+    // switch to redis?
     const numberOfChatPromise = prismadb.message.count({
       where: { userId: user.id },
     });
