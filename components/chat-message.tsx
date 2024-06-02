@@ -11,8 +11,8 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 
 export interface ChatMessageProps {
-  role: "system" | "user"| "assistant",
-  type?: string,
+  role: "system" | "user" | "assistant";
+  type?: string;
   content?: string;
   isLoading?: boolean;
   src?: string;
