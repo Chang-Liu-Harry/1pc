@@ -25,6 +25,7 @@ const MindIdPage = async ({
       userId,
     }
   });
+  console.log("Fetched mind:", mind);
 
   const categories = await prismadb.category.findMany();
 
