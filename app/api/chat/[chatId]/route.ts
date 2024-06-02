@@ -285,6 +285,11 @@ export async function POST(request: Request, { params }: { params: { chatId: str
       return new StreamingTextResponse(s);
     }
 
+    if (mind.name === null || mind.name === undefined) {
+      console.error('Mind has no name:', mind);
+      return new NextResponse("Invalid mind object", { status: 400 });
+    }
+
     let type = prompt.includes("send") ? "image" : "text";
     console.log('Request type determined:', type);
 
