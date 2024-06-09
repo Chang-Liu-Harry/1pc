@@ -17,7 +17,7 @@ export async function PATCH(
       return new NextResponse("Mind ID required", { status: 400 });
     }
 
-    if (!user || !user.id || !user.firstName) {
+    if (!user || !user.id || !user.username) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -40,7 +40,7 @@ export async function PATCH(
       data: {
         categoryId,
         userId: user.id,
-        userName: user.firstName,
+        userName: user.username,
         src,
         name,
         description,
