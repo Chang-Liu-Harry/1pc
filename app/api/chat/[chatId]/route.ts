@@ -25,15 +25,18 @@ const generateImage = async (prompt: string) => {
   
   // !!! SUSPENDED
   //return null
+  //"sd_model_checkpoint": "ChilloutMixFP32"
   try {
     const response = await axios.post(`https://api.runpod.ai/v2/${process.env.SD_RUNPOD_API_ID}/runsync`, {
+    //const response = await axios.post(`https://api.runpod.ai/v2/exwbe8nwqkd9kv/runsync`, {
       input: {
         api_name: "txt2img",
         prompt: loraprompt,
         negative_prompt: negaprompt,
         override_settings: {
-          "sd_model_checkpoint": "ChilloutMixFP32"
+          "sd_model_checkpoint": "chilloutmix"
         },
+        
         steps: 28,
         sampler_index: "DPM++ 2M",
         scheduler: "Karras",
@@ -45,9 +48,13 @@ const generateImage = async (prompt: string) => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.SD_RUNPOD_API_KEY}`,
+        //'Authorization': `Bearer 01TDHLUK9CCYKARPIULUS106ZBDEIQMAK8G0MAU5`,
       },
       timeout: 30000// set timeout to 30s
+      
     })
+    console.log('SD_RUNPOD_API_ID:', process.env.SD_RUNPOD_API_ID);
+    console.log('SD_RUNPOD_API_KEY:', process.env.SD_RUNPOD_API_KEY); 
 
     console.log("Posted to Runpod")
 
@@ -358,7 +365,7 @@ export async function POST(request: Request, { params }: { params: { chatId: str
         console.timeEnd('Total request handling time');
         return new StreamingTextResponse(s);
       } else {
-        let errorContent = "Error when generating images";
+        let errorContent = "Error when generating images. Pls retry. If the issue persists, pls contact support via discord or call the father in law - Chang.";
         s.push(errorContent);
         s.push(null);
         await prismadb.mind.update({
@@ -416,4 +423,3 @@ export async function POST(request: Request, { params }: { params: { chatId: str
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
-

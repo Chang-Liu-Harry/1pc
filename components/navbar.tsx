@@ -29,7 +29,7 @@ const Navbar = ({
         <MobileSidebar isPro={isPro} />
         <Link href="/">
           <h1 className={cn("hidden md:block text-xl md:text-3xl font-bold text-primary", font.className)}>
-            We are born to love and be loved. If real human cannot love us, we count on AI.
+            We are born to love and be loved
           </h1>
         </Link>
       </div>
