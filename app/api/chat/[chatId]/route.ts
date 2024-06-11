@@ -15,26 +15,29 @@ import { Mind, Prisma, Role } from "@prisma/client";
 
 
 export const maxDuration = 25;
-const loraprompt = "best quality, ultra high res, (photorealistic:1.4), 1girl, off-shoulder white shirt, black tight skirt, black choker, (faded ash gray messy bun:1), faded ash gray hair, (large breasts:1), looking at viewer, closeup <lora:koreandoll:0.66>, selfie, slightly blonde hair, pretty"
-const negaprompt = "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,"
 
-const generateImage = async (prompt: string) => {
-  const supabase = createClient(`${process.env.SUPABASE_URL}`, `${process.env.SUPABASE_SERVICE_ROLE_SECRET}`)
+export const generateImage = async (prompt: string) => {
+  console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log('Supabase Secret:', process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_SECRET);
+  const supabase = createClient(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`, `${process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_SECRET}`)
   console.log('current prompt inside generateImage func', prompt)
   // throw new Error("Image generation not enabled")
   
   // !!! SUSPENDED
   //return null
   //"sd_model_checkpoint": "ChilloutMixFP32"
+  const loraprompt = "best quality, ultra high res, (photorealistic:1.4), 1girl, off-shoulder white shirt, black tight skirt, black choker, (faded ash gray messy bun:1), faded ash gray hair, (large breasts:1), looking at viewer, closeup <lora:koreandoll:0.66>, selfie, slightly blonde hair, pretty"
+  const negaprompt = "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,"
+
   try {
-    const response = await axios.post(`https://api.runpod.ai/v2/${process.env.SD_RUNPOD_API_ID}/runsync`, {
+    const response = await axios.post(`https://api.runpod.ai/v2/${process.env.NEXT_PUBLIC_SD_RUNPOD_API_ID}/runsync`, {
     //const response = await axios.post(`https://api.runpod.ai/v2/exwbe8nwqkd9kv/runsync`, {
       input: {
         api_name: "txt2img",
         prompt: loraprompt,
         negative_prompt: negaprompt,
         override_settings: {
-          "sd_model_checkpoint": "chilloutmix"
+          "sd_model_checkpoint": "ChilloutMixFP32"
         },
         
         steps: 28,
@@ -47,14 +50,14 @@ const generateImage = async (prompt: string) => {
     }, {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.SD_RUNPOD_API_KEY}`,
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SD_RUNPOD_API_KEY}`,
         //'Authorization': `Bearer 01TDHLUK9CCYKARPIULUS106ZBDEIQMAK8G0MAU5`,
       },
-      timeout: 30000// set timeout to 30s
+      timeout: 60000// set timeout to 60s
       
     })
-    console.log('SD_RUNPOD_API_ID:', process.env.SD_RUNPOD_API_ID);
-    console.log('SD_RUNPOD_API_KEY:', process.env.SD_RUNPOD_API_KEY); 
+    console.log('SD_RUNPOD_API_ID:', process.env.NEXT_PUBLIC_SD_RUNPOD_API_ID);
+    console.log('SD_RUNPOD_API_KEY:', process.env.NEXT_PUBLIC_SD_RUNPOD_API_KEY); 
 
     console.log("Posted to Runpod")
 
@@ -73,7 +76,7 @@ const generateImage = async (prompt: string) => {
     }
     console.log(data)
     // @ts-ignore
-    const publicPath = `${process.env.SUPABASE_URL}/storage/v1/object/public/${data.fullPath}`
+    const publicPath = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${data.fullPath}`
     console.log(publicPath)
 
     // return image
