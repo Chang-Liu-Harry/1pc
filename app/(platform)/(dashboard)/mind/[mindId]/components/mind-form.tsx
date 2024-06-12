@@ -1,5 +1,8 @@
 "use client";
 
+import { nanoid } from 'nanoid';
+import { decode } from 'base64-arraybuffer';
+import { createClient } from '@supabase/supabase-js';
 import * as z from "zod";
 import axios from "axios";
 import { useForm } from "react-hook-form";
@@ -8,8 +11,6 @@ import { useRouter } from "next/navigation";
 import { Wand2 } from "lucide-react";
 import { Eye } from "lucide-react";
 import { Category, Mind } from "@prisma/client";
-import { generateImage } from "@/app/api/chat/[chatId]/route";
-
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,8 +44,10 @@ const formSchema = z.object({
   seed: z.string().min(200, { message: "Seed requires at least 200 characters." }),
   src: z.string().min(1, { message: "Image is required." }),
   categoryId: z.string().min(1, { message: "Category is required" }),
-  styleTag: z.string().min(1, { message: "Style tag is required" }),
-  characterTag: z.string().min(1, { message: "Character tag is required" }),
+  //optional parts
+  styleTag: z.string().optional(),
+  characterTag: z.string().optional(),
+  customPrompt: z.string().optional(),
 });
 
 interface MindFormProps {
@@ -71,21 +74,109 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
       seed: "",
       src: "",
       categoryId: undefined,
+      //expandable optional parts
       styleTag: "",
       characterTag: "",
+      customPrompt: "", 
     },
   });
+  const generateImage = async (prompt: string, styleTag: string, characterTag: string, customPrompt: string) => {
+    console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+    console.log('Supabase Secret:', process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_SECRET);
+    const supabase = createClient(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`, `${process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_SECRET}`)
+    console.log('current prompt inside generateImage func', prompt)
+  
+    const styleMap: Record<string, string> = {
+      anime: "<lora:animeStyle:0.8>",
+      realistic: "<lora:realisticStyle:0.8>",
+      fantasy: "<lora:fantasyStyle:0.8>",
+    };
+  
+    const characterMap: Record<string, string> = {
+      warrior: "WarriorCheckpoint",
+      mage: "MageCheckpoint",
+      thief: "ThiefCheckpoint",
+    };
+  
+    const lora = styleMap[styleTag] || "";
+    const checkpoint = characterMap[characterTag] || "ChilloutMixFP32";//default to chilloutmix
+  
+    const loraprompt = "best quality, ultra high res, (photorealistic:1.4), 1girl, off-shoulder white shirt, black tight skirt, black choker, (faded ash gray messy bun:1), faded ash gray hair, (large breasts:1), looking at viewer, closeup ${lora}, selfie, slightly blonde hair, pretty"
+    const negaprompt = "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,"
+  
+    try {
+      const response = await axios.post(`https://api.runpod.ai/v2/${process.env.NEXT_PUBLIC_SD_RUNPOD_API_ID}/runsync`, {
+      //const response = await axios.post(`https://api.runpod.ai/v2/exwbe8nwqkd9kv/runsync`, {
+        input: {
+          api_name: "txt2img",
+          prompt: loraprompt,
+          negative_prompt: negaprompt,
+          override_settings: {
+            "sd_model_checkpoint": checkpoint
+          },
+          
+          steps: 28,
+          sampler_index: "DPM++ 2M",
+          scheduler: "Karras",
+          cfg_scale: 8,
+          width: 512,
+          height: 512,
+        }
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SD_RUNPOD_API_KEY}`,
+          //'Authorization': `Bearer 01TDHLUK9CCYKARPIULUS106ZBDEIQMAK8G0MAU5`,
+        },
+        timeout: 60000// set timeout to 60s
+        
+      })
+      console.log('SD_RUNPOD_API_ID:', process.env.NEXT_PUBLIC_SD_RUNPOD_API_ID);
+      console.log('SD_RUNPOD_API_KEY:', process.env.NEXT_PUBLIC_SD_RUNPOD_API_KEY); 
+  
+      console.log("Posted to Runpod")
+  
+      const image = response.data.output.images[0]
+      console.log(image.length)
+  
+      const { data, error } = await supabase
+        .storage
+        .from('gen-images')
+        .upload(`public/ai-mind-gen-${nanoid()}.png`, decode(image), {
+          contentType: 'image/png'
+        })
+      if (error) {
+        console.log('error', error)
+        return undefined
+      }
+      console.log(data)
+      // @ts-ignore
+      const publicPath = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${data.fullPath}`
+      console.log(publicPath)
+  
+      // return image
+      return publicPath
+  
+    } catch (error) {
+      console.error('Error:', error);
+      return undefined;
+    }
+  }
 
   const isLoading = form.formState.isSubmitting;
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const generatePreviewImage = async () => {
     setIsGeneratingImage(true);
     console.log("Generating image preview...");
     try {
       const prompt = " ";
-      const imageData = await generateImage(prompt);
+      const styleTag = form.getValues('styleTag') || "";
+      const characterTag = form.getValues('characterTag') || "";
+      const customPrompt = form.getValues('customPrompt') || "";
+      const imageData = await generateImage(prompt, styleTag, characterTag,customPrompt);
       if (imageData) {
         setImagePreview(imageData);
       } else {
@@ -214,62 +305,6 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
               )}
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              name="styleTag"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem className="col-span-2 md:col-span-1">
-                  <FormLabel>Style Tag</FormLabel>
-                  <FormControl>
-                    <Select disabled={isLoading} onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="bg-background">
-                          <SelectValue defaultValue={field.value} placeholder="Select a style tag" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="anime">Anime</SelectItem>
-                        <SelectItem value="realistic">Realistic</SelectItem>
-                        <SelectItem value="fantasy">Fantasy</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormDescription>
-                    Select a style tag for your AI
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              name="characterTag"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem className="col-span-2 md:col-span-1">
-                  <FormLabel>Character Tag</FormLabel>
-                  <FormControl>
-                    <Select disabled={isLoading} onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="bg-background">
-                          <SelectValue defaultValue={field.value} placeholder="Select a character tag" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="warrior">Warrior</SelectItem>
-                        <SelectItem value="mage">Mage</SelectItem>
-                        <SelectItem value="thief">Thief</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormDescription>
-                    Select a character tag for your AI
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
           <div className="space-y-2 w-full">
             <div>
               <h3 className="text-lg font-medium">Configuration</h3>
@@ -311,26 +346,111 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
               </FormItem>
             )}
           />
-          {/* Test Button */}
-          <div className="w-full flex justify-center">
-            <Button type="button" size="lg" disabled={isLoading || isGeneratingImage} onClick={generatePreviewImage}>
-              Generate Image Preview
-              <Wand2 className="w-4 h-4 ml-2" />
+          <div className="w-full flex justify-center mt-4">
+            <Button
+              type="button"
+              size="lg"
+              className="bg-secondary text-primary hover:bg-secondary-dark"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? "Hide Additional Options" : "Show Additional Options"}
             </Button>
           </div>
-          {isGeneratingImage && (
-            <div className="w-full flex justify-center mt-4">
-              <LoadingSpinner />
-            </div>
-          )}
-          {imagePreview && (
-            <div className="w-full flex flex-col items-center justify-center mt-4 space-y-2">
-              <div className="border-4 border-gray-300 p-2 rounded-md">
-                <img src={imagePreview} alt="Image Preview" sizes="(max-width: 768px) 100vw, 768px" />
+          {isExpanded && (
+            <div className="mt-4 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  name="styleTag"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="col-span-2 md:col-span-1">
+                      <FormLabel>Style Tag</FormLabel>
+                      <FormControl>
+                        <Select disabled={isLoading} onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="bg-background">
+                              <SelectValue defaultValue={field.value} placeholder="Select a style tag" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="anime">Anime</SelectItem>
+                            <SelectItem value="realistic">Realistic</SelectItem>
+                            <SelectItem value="fantasy">Fantasy</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormDescription>
+                        Select a style tag for your AI
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  name="characterTag"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="col-span-2 md:col-span-1">
+                      <FormLabel>Character Tag</FormLabel>
+                      <FormControl>
+                        <Select disabled={isLoading} onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="bg-background">
+                              <SelectValue defaultValue={field.value} placeholder="Select a character tag" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="warrior">Warrior</SelectItem>
+                            <SelectItem value="mage">Mage</SelectItem>
+                            <SelectItem value="thief">Thief</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormDescription>
+                        Select a character tag for your AI
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  name="customPrompt"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Custom Prompt</FormLabel>
+                      <FormControl>
+                        <Textarea disabled={isLoading} rows={3} className="bg-background resize-none" placeholder="Your custom prompt here..." {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Provide a custom prompt for the image generation.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-              <Button type="button" onClick={useGeneratedImage}>
-                Use this Image
-              </Button>
+              <div className="w-full flex justify-center">
+                <Button type="button" size="lg" disabled={isLoading || isGeneratingImage} onClick={generatePreviewImage}>
+                  Generate Image Preview
+                  <Eye className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+              {isGeneratingImage && (
+                <div className="w-full flex justify-center mt-4">
+                  <LoadingSpinner />
+                </div>
+              )}
+              {imagePreview && (
+                <div className="w-full flex flex-col items-center justify-center mt-4 space-y-2">
+                  <div className="border-4 border-gray-300 p-2 rounded-md">
+                    <img src={imagePreview} alt="Image Preview" sizes="(max-width: 768px) 100vw, 768px" />
+                  </div>
+                  <Button type="button" onClick={useGeneratedImage}>
+                    Use this Image
+                  </Button>
+                </div>
+              )}
             </div>
           )}
           <div className="w-full flex justify-center mt-4">

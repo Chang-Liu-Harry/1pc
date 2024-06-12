@@ -16,19 +16,33 @@ import { Mind, Prisma, Role } from "@prisma/client";
 
 export const maxDuration = 25;
 
-export const generateImage = async (prompt: string) => {
+// TO DO: prompt optimizer for image generation
+export const sd_promptGPT = async (prompt: string, conversationHistory: ChatMessage[]) => {}
+
+const generateImage = async (prompt: string, mind: Mind) => {
   console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
   console.log('Supabase Secret:', process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_SECRET);
   const supabase = createClient(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`, `${process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_SECRET}`)
   console.log('current prompt inside generateImage func', prompt)
-  // throw new Error("Image generation not enabled")
-  
-  // !!! SUSPENDED
-  //return null
-  //"sd_model_checkpoint": "ChilloutMixFP32"
-  const loraprompt = "best quality, ultra high res, (photorealistic:1.4), 1girl, off-shoulder white shirt, black tight skirt, black choker, (faded ash gray messy bun:1), faded ash gray hair, (large breasts:1), looking at viewer, closeup <lora:koreandoll:0.66>, selfie, slightly blonde hair, pretty"
-  const negaprompt = "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,"
 
+  const styleMap: Record<string, string> = {
+    nami: "<lora:nami:0.5>",
+    realistic: "<lora:realisticStyle:0.8>",
+    fantasy: "<lora:fantasyStyle:0.8>",
+  };
+
+  const characterMap: Record<string, string> = {
+    anime: "falkons_nami",
+    mage: "MageCheckpoint",
+    thief: "ThiefCheckpoint",
+  };
+
+  const lora = styleMap[mind.styleTag] || "";
+  const checkpoint = characterMap[mind.characterTag] || "ChilloutMixFP32";//default to chilloutmix
+
+  const loraprompt = "best quality, ultra high res, (photorealistic:1.4), 1girl, off-shoulder white shirt, black tight skirt, black choker, (faded ash gray messy bun:1), faded ash gray hair, (large breasts:1), looking at viewer, closeup ${lora}, selfie, slightly blonde hair, pretty"
+  const negaprompt = "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,"
+  const finalPrompt = loraprompt+prompt+mind.seed+negaprompt
   try {
     const response = await axios.post(`https://api.runpod.ai/v2/${process.env.NEXT_PUBLIC_SD_RUNPOD_API_ID}/runsync`, {
     //const response = await axios.post(`https://api.runpod.ai/v2/exwbe8nwqkd9kv/runsync`, {
@@ -37,7 +51,7 @@ export const generateImage = async (prompt: string) => {
         prompt: loraprompt,
         negative_prompt: negaprompt,
         override_settings: {
-          "sd_model_checkpoint": "ChilloutMixFP32"
+          "sd_model_checkpoint": checkpoint
         },
         
         steps: 28,
@@ -344,7 +358,7 @@ export async function POST(request: Request, { params }: { params: { chatId: str
         return new StreamingTextResponse(s);
       }
       console.time('Generate image');
-      const image = await generateImage(prompt);
+      const image = await generateImage(prompt,mind);
       console.timeEnd('Generate image');
       let s = new Readable();
       if (image) {
