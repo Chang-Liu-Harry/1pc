@@ -17,7 +17,7 @@ import { Mind, Prisma, Role } from "@prisma/client";
 export const maxDuration = 25;
 
 // TO DO: prompt optimizer for image generation
-export const sd_promptGPT = async (prompt: string, conversationHistory: ChatMessage[]) => {}
+//const sd_promptGPT = async (prompt: string, conversationHistory: ChatMessage[]) => {}
 
 const generateImage = async (prompt: string, mind: Mind) => {
   console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
