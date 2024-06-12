@@ -3,6 +3,7 @@
 import { BeatLoader } from "react-spinners";
 import { Copy } from "lucide-react";
 import { useTheme } from "next-themes";
+import Image from 'next/image';
 
 import { cn } from "@/lib/utils";
 import { BotAvatar } from "@/components/bot-avatar"

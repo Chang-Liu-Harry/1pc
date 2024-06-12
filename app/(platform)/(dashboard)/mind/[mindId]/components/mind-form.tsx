@@ -1,5 +1,5 @@
 "use client";
-
+import Image from 'next/image';
 import { nanoid } from 'nanoid';
 import { decode } from 'base64-arraybuffer';
 import { createClient } from '@supabase/supabase-js';
@@ -324,7 +324,7 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
                   <Textarea disabled={isLoading} rows={7} className="bg-background resize-none" placeholder="Your instructions here..." {...field} />
                 </FormControl>
                 <FormDescription>
-                  Describe in detail your mind's backstory and relevant details.
+                  Describe in detail your mind&apos;s backstory and relevant details.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -444,7 +444,7 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
               {imagePreview && (
                 <div className="w-full flex flex-col items-center justify-center mt-4 space-y-2">
                   <div className="border-4 border-gray-300 p-2 rounded-md">
-                    <img src={imagePreview} alt="Image Preview" sizes="(max-width: 768px) 100vw, 768px" />
+                    <Image src={imagePreview} alt="Image Preview" sizes="(max-width: 768px) 100vw, 768px" />
                   </div>
                   <Button type="button" onClick={useGeneratedImage}>
                     Use this Image
