@@ -6,7 +6,8 @@ export default authMiddleware({
     '/',
     '/api/webhook',
     '/sign-up',  // Ensure the sign-up page is also public
-    '/sign-in'   // Ensure the sign-in page is also public
+    '/sign-in',   // Ensure the sign-in page is also public
+    '/dashboard'
   ],
 
   afterAuth(auth, req) {
