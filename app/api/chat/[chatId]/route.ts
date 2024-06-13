@@ -25,30 +25,30 @@ const generateImage = async (prompt: string, mind: Mind) => {
   const supabase = createClient(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`, `${process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_SECRET}`)
   console.log('current prompt inside generateImage func', prompt)
 
-  const styleMap: Record<string, string> = {
-    nami: "<lora:nami:0.5>",
-    realistic: "<lora:realisticStyle:0.8>",
-    fantasy: "<lora:fantasyStyle:0.8>",
-  };
-
   const characterMap: Record<string, string> = {
-    anime: "falkons_nami",
-    mage: "MageCheckpoint",
-    thief: "ThiefCheckpoint",
+    nami: "<lora:nami:0.5>",
+    robin: "<lora:realisticStyle:0.8>",
+    hancock: "<lora:fantasyStyle:0.8>",
   };
 
-  const lora = styleMap[mind.styleTag] || "";
-  const checkpoint = characterMap[mind.characterTag] || "ChilloutMixFP32";//default to chilloutmix
+  const styleMap: Record<string, string> = {
+    anime: "falkons_nami",
+    realistic: "MageCheckpoint",
+    fantacy: "ThiefCheckpoint",
+  };
 
-  const loraprompt = "best quality, ultra high res, (photorealistic:1.4), 1girl, off-shoulder white shirt, black tight skirt, black choker, (faded ash gray messy bun:1), faded ash gray hair, (large breasts:1), looking at viewer, closeup ${lora}, selfie, slightly blonde hair, pretty"
+  const lora = characterMap[mind.characterTag] || "";
+  const checkpoint = styleMap[mind.styleTag] || "falkons_nami";//default to chilloutmix
+
+  const loraprompt = "best quality, ultra high res, (photorealistic:1.4), 1girl, off-shoulder white shirt, black tight skirt, black choker, (faded ash gray messy bun:1), faded ash gray hair, (large breasts:1), looking at viewer, closeup, selfie, slightly blonde hair, pretty,"
   const negaprompt = "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,"
-  const finalPrompt = loraprompt+prompt+mind.seed+negaprompt
+
   try {
     const response = await axios.post(`https://api.runpod.ai/v2/${process.env.NEXT_PUBLIC_SD_RUNPOD_API_ID}/runsync`, {
     //const response = await axios.post(`https://api.runpod.ai/v2/exwbe8nwqkd9kv/runsync`, {
       input: {
         api_name: "txt2img",
-        prompt: loraprompt,
+        prompt: loraprompt + lora +", "+ mind.customPrompt + ", " + prompt,
         negative_prompt: negaprompt,
         override_settings: {
           "sd_model_checkpoint": checkpoint
@@ -114,12 +114,7 @@ const generateTextMancerPro = async (mind: Mind, userName: string, prompt: strin
       }
     ],
     response_config: {
-      description: mind.instructions,
-      // "\
-      // Scenario:The university, and the room; \
-      // Personality: Lydia is sexy, spicy, she doesn't get along very well with you, \
-      // she is a gal/gyaru, she likes fashion and is one of the most popular girls in class;\
-      // ",
+      description: mind.instructions+"/n Here is some example conversations between you and the user:"+ mind.seed,
       role: "assistant",
       name: mind.name,
     },

@@ -1,5 +1,5 @@
 "use client";
-import Image from 'next/image';
+
 import { nanoid } from 'nanoid';
 import { decode } from 'base64-arraybuffer';
 import { createClient } from '@supabase/supabase-js';
@@ -40,8 +40,8 @@ Elon: Always! But right now, I'm particularly excited about Neuralink. It has th
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
   description: z.string().min(1, { message: "Description is required." }),
-  instructions: z.string().min(200, { message: "Instructions require at least 200 characters." }),
-  seed: z.string().min(200, { message: "Seed requires at least 200 characters." }),
+  instructions: z.string().min(50, { message: "Instructions require at least 50 characters." }),
+  seed: z.string().min(50, { message: "Seed requires at least 50 characters." }),
   src: z.string().min(1, { message: "Image is required." }),
   categoryId: z.string().min(1, { message: "Category is required" }),
   //optional parts
@@ -86,30 +86,31 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
     const supabase = createClient(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`, `${process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_SECRET}`)
     console.log('current prompt inside generateImage func', prompt)
   
-    const styleMap: Record<string, string> = {
-      anime: "<lora:animeStyle:0.8>",
-      realistic: "<lora:realisticStyle:0.8>",
-      fantasy: "<lora:fantasyStyle:0.8>",
-    };
-  
     const characterMap: Record<string, string> = {
-      warrior: "WarriorCheckpoint",
-      mage: "MageCheckpoint",
-      thief: "ThiefCheckpoint",
+      nami: "<lora:nami:0.5>",
+      robin: "<lora:realisticStyle:0.8>",
+      hancock: "<lora:fantasyStyle:0.8>",
     };
   
-    const lora = styleMap[styleTag] || "";
-    const checkpoint = characterMap[characterTag] || "ChilloutMixFP32";//default to chilloutmix
+    const styleMap: Record<string, string> = {
+      anime: "falkons_nami",
+      realistic: "MageCheckpoint",
+      fantacy: "ThiefCheckpoint",
+    };
   
-    const loraprompt = "best quality, ultra high res, (photorealistic:1.4), 1girl, off-shoulder white shirt, black tight skirt, black choker, (faded ash gray messy bun:1), faded ash gray hair, (large breasts:1), looking at viewer, closeup ${lora}, selfie, slightly blonde hair, pretty"
-    const negaprompt = "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,"
+    const lora = characterMap[characterTag] || "";
+    const checkpoint = styleMap[styleTag] || "falkons_nami";//default to chilloutmix
   
+    //const loraprompt = "best quality, ultra high res, (photorealistic:1.4), 1girl, off-shoulder white shirt, black tight skirt, black choker, (faded ash gray messy bun:1), faded ash gray hair, (large breasts:1), looking at viewer, closeup, selfie, slightly blonde hair, pretty,"
+    const loraprompt = ""
+    //const negaprompt = "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,"
+    const negaprompt = "(worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,"
     try {
       const response = await axios.post(`https://api.runpod.ai/v2/${process.env.NEXT_PUBLIC_SD_RUNPOD_API_ID}/runsync`, {
       //const response = await axios.post(`https://api.runpod.ai/v2/exwbe8nwqkd9kv/runsync`, {
         input: {
           api_name: "txt2img",
-          prompt: loraprompt,
+          prompt: loraprompt + lora +", "+ customPrompt + ", " + prompt,
           negative_prompt: negaprompt,
           override_settings: {
             "sd_model_checkpoint": checkpoint
@@ -380,7 +381,7 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
                         </Select>
                       </FormControl>
                       <FormDescription>
-                        Select a style tag for your AI
+                        This is the AI engine that will be used for image generation.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -400,14 +401,14 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="warrior">Warrior</SelectItem>
-                            <SelectItem value="mage">Mage</SelectItem>
-                            <SelectItem value="thief">Thief</SelectItem>
+                            <SelectItem value="robin">Robin(1pc)</SelectItem>
+                            <SelectItem value="nami">Nami(1pc)</SelectItem>
+                            <SelectItem value="hancock">Boa Hancock(1pc)</SelectItem>
                           </SelectContent>
                         </Select>
                       </FormControl>
                       <FormDescription>
-                        Select a character tag for your AI
+                        This is the girl model that will be used to generate AI images.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -423,7 +424,7 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
                         <Textarea disabled={isLoading} rows={3} className="bg-background resize-none" placeholder="Your custom prompt here..." {...field} />
                       </FormControl>
                       <FormDescription>
-                        Provide a custom prompt for the image generation.
+                        Describe the look of your girl.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -432,7 +433,7 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
               </div>
               <div className="w-full flex justify-center">
                 <Button type="button" size="lg" disabled={isLoading || isGeneratingImage} onClick={generatePreviewImage}>
-                  Generate Image Preview
+                  Generate A Preview Image Of Your AI GF
                   <Eye className="w-4 h-4 ml-2" />
                 </Button>
               </div>
@@ -444,10 +445,10 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
               {imagePreview && (
                 <div className="w-full flex flex-col items-center justify-center mt-4 space-y-2">
                   <div className="border-4 border-gray-300 p-2 rounded-md">
-                    <Image src={imagePreview} alt="Image Preview" sizes="(max-width: 768px) 100vw, 768px" />
+                    <img src={imagePreview} alt="Image Preview" sizes="(max-width: 768px) 100vw, 768px" />
                   </div>
                   <Button type="button" onClick={useGeneratedImage}>
-                    Use this Image
+                    Use this Image as the avatar
                   </Button>
                 </div>
               )}

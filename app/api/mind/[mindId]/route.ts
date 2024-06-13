@@ -11,7 +11,7 @@ export async function PATCH(
   try {
     const body = await req.json();
     const user = await currentUser();
-    const { src, name, description, instructions, seed, categoryId } = body;
+    const { src, name, description, instructions, seed, categoryId, styleTag, characterTag, customPrompt } = body;
 
     if (!params.mindId) {
       return new NextResponse("Mind ID required", { status: 400 });
@@ -46,6 +46,9 @@ export async function PATCH(
         description,
         instructions,
         seed,
+        styleTag,
+        characterTag,
+        customPrompt,
       }
     });
 
