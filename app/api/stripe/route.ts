@@ -43,7 +43,7 @@ export async function GET() {
           price_data: {
             currency: "USD",
             product_data: {
-              name: "FlirtAI.Chat Monthly Subscription",
+              name: "OnepieceAI.Chat Monthly Subscription",
               description: "Monthly Access ",
             },
             unit_amount: 10,

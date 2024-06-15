@@ -9,8 +9,8 @@ import { ProModal } from "@/components/pro-modal";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FlirtAI",
-  description: "A better AI chatbot that flirts you",
+  title: "OnepieceAI",
+  description: "Talk to any charater you like",
 };
 
 export default function RootLayout({
