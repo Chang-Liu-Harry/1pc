@@ -38,10 +38,10 @@ const Minds = ({
         <Card key={item.name} className="bg-primary/10 rounded-xl cursor-pointer hover:opacity-75 transition border-0">
           <Link href={`/chat/${item.id}`}>
             <CardHeader className="flex items-center justify-center text-center text-muted-foreground">
-              <div className="relative w-32 h-32">
+              <div className="relative w-full h-48 sm:h-64 md:h-80 lg:h-96">
                 <Image
                   src={item.src}
-                  fill
+                  layout="fill"
                   className="rounded-xl object-cover"
                   alt="Character"
                 />
