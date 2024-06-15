@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from "@/lib/utils";
-import { Home, Plus, Settings } from "lucide-react";
+import { Home, Plus,Sailboat } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useProModal } from "@/hooks/use-pro-modal";
 interface SidebarProps {
@@ -33,9 +33,9 @@ const Sidebar = (
       pro: true,
     },
     {
-      icon: Settings,
+      icon: Sailboat,
       href: '/settings',
-      label: "Settings",
+      label: "Tickets",
       pro: false,
     },
   ];

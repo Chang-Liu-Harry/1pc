@@ -20,8 +20,8 @@ export const maxDuration = 25;
 //const sd_promptGPT = async (prompt: string, conversationHistory: ChatMessage[]) => {}
 
 const generateImage = async (prompt: string, mind: Mind) => {
-  console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-  console.log('Supabase Secret:', process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_SECRET);
+  //console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+  //console.log('Supabase Secret:', process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_SECRET);
   const supabase = createClient(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`, `${process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_SECRET}`)
   console.log('current prompt inside generateImage func', prompt)
 
@@ -70,13 +70,13 @@ const generateImage = async (prompt: string, mind: Mind) => {
       timeout: 60000// set timeout to 60s
       
     })
-    console.log('SD_RUNPOD_API_ID:', process.env.NEXT_PUBLIC_SD_RUNPOD_API_ID);
-    console.log('SD_RUNPOD_API_KEY:', process.env.NEXT_PUBLIC_SD_RUNPOD_API_KEY); 
+    //console.log('SD_RUNPOD_API_ID:', process.env.NEXT_PUBLIC_SD_RUNPOD_API_ID);
+    //console.log('SD_RUNPOD_API_KEY:', process.env.NEXT_PUBLIC_SD_RUNPOD_API_KEY); 
 
-    console.log("Posted to Runpod")
+    //console.log("Posted to Runpod")
 
     const image = response.data.output.images[0]
-    console.log(image.length)
+    //console.log(image.length)
 
     const { data, error } = await supabase
       .storage
@@ -88,7 +88,7 @@ const generateImage = async (prompt: string, mind: Mind) => {
       console.log('error', error)
       return undefined
     }
-    console.log(data)
+    //console.log(data)
     // @ts-ignore
     const publicPath = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${data.fullPath}`
     console.log(publicPath)
@@ -127,14 +127,14 @@ const generateTextMancerPro = async (mind: Mind, userName: string, prompt: strin
   };
   
   try {
-    console.log('Sending text generation request to Mancer with prompt:', prompt);
+    //console.log('Sending text generation request to Mancer with prompt:', prompt);
     let raw_response = await axios.post(`https://neuro.mancer.tech/oai/v1/chat/completions`, data, { headers });
     response = raw_response.data.choices[0].message.content;
-    console.log('Received response from Mancer:', response);
+    //console.log('Received response from Mancer:', response);
   } catch (error) {
-    console.error('Error during text generation:', error);
+    //console.error('Error during text generation:', error);
   }
-  console.log(data)
+  //console.log(data)
   return response;
 };
 
@@ -338,7 +338,7 @@ export async function POST(request: Request, { params }: { params: { chatId: str
     console.timeEnd('Parse chat messages');
     
     if (relevantHistory) {
-      console.log('Relevant history for the conversation:', relevantHistory);
+      //console.log('Relevant history for the conversation:', relevantHistory);
     } else {
       console.log('No valid history could be processed.');
     }
