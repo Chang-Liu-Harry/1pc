@@ -1,7 +1,7 @@
 import Categories from "@/components/categories";
 import Minds from "@/components/minds";
 import SearchInput from "@/components/search-input";
-
+import NoticeBar from "@/components/noticebar";  // Import NoticeBar
 import prismadb from "@/lib/prismadb";
 
 interface RootPageProps {
@@ -44,8 +44,10 @@ export default async function RootPage({
 
   return (
     <div className="h-full p-4 space-y-2">
+
       <SearchInput />
       <Categories data={categories} />
+      <NoticeBar />  {/* Add NoticeBar here */}
       <Minds data={data} />
     </div>
   );
