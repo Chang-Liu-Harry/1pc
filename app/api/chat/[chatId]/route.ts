@@ -27,21 +27,33 @@ const generateImage = async (prompt: string, mind: Mind) => {
 
   const characterMap: Record<string, string> = {
     nami: "<lora:nami:0.5>",
-    robin: "<lora:realisticStyle:0.8>",
+    robin_fashion: "<lora:One_Piece_Egghead_arc_female_clothes:0.9>",
     hancock: "<lora:fantasyStyle:0.8>",
   };
 
   const styleMap: Record<string, string> = {
     anime: "falkons_nami",
-    realistic: "MageCheckpoint",
+    anime_fashion: "autismMix",
     fantacy: "ThiefCheckpoint",
   };
 
-  const lora = characterMap[mind.characterTag] || "";
-  const checkpoint = styleMap[mind.styleTag] || "falkons_nami";//default to chilloutmix
+  const negativePromptMap: Record<string, string> = {
+    anime: "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,",
+    anime_fashion: "(multiple views, multiple panels), (((unprofessional-bodies))), ((bad-hands-5)), lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, (muscular, toned), (masturbating), monochrome, (horns) greyscale, spread legs, feet, (smiling female), (cleavage, nude male, nude, nipples), source_furry, source_pony,",
+    fantacy: "bad art, poorly drawn, blurry, text, error, deformed, disfigured, worst quality, low quality,",
+  };
 
-  const loraprompt = "best quality, ultra high res, (photorealistic:1.4), 1girl, off-shoulder white shirt, black tight skirt, black choker, (faded ash gray messy bun:1), faded ash gray hair, (large breasts:1), looking at viewer, closeup, selfie, slightly blonde hair, pretty,"
-  const negaprompt = "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,"
+  const loraPromptMap: Record<string, string> = {
+    nami: "nami, one piece, 1girl, bangle, bangs, bare shoulders, belt, bikini, bikini top only, blue sky, caribbean worlds background, ship handrail, pirate ship, bracelet, breasts, brown eyes, bubble, cleavage, cloud, cowboy shot, day, denim, earrings, floating hair, green belt, green bikini, groin, jeans, jewelry, large breasts, log pose, long hair, looking at viewer, navel, orange hair, pants, shoulder tattoo, sidelocks, sky, smile, solo, standing, stomach, swimsuit, tattoo on shoulder, ((masterpiece)), topless, nipples, nice hands, perfect hands",
+    robin_fashion: "score_9, score_8_up, score_7_up, score_6_up, score_5_up, score_4_up, thick lines, anime, masterpiece, egghd, 1girl, solo, long hair, breasts, looking at viewer, smile, large breasts, black hair, thighhighs, long sleeves, navel, cleavage, sitting, underwear, collarbone, panties, jacket, sidelocks, open clothes, sky, midriff, cloud, hand up, stomach, grin, arm up, blue sky, lips, black jacket, crop top, groin, black panties, eyelashes, no bra, highleg, suspenders, cropped legs, zipper, arm at side, high collar, highleg panties, hair slicked back, collared jacket, nico robin BREAK source_anime",
+    fantacy: "bad art, poorly drawn, blurry, text, error, deformed, disfigured, worst quality, low quality,",
+  };
+  const lorapromptdefault = "best quality, ultra high res, (photorealistic:1.4), 1girl, off-shoulder white shirt, black tight skirt, black choker, (faded ash gray messy bun:1), faded ash gray hair, (large breasts:1), looking at viewer, closeup, selfie, slightly blonde hair, pretty,"
+  const loraprompt = loraPromptMap[mind.characterTag] || lorapromptdefault
+  const negapromptdefault = "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,"
+  const negaprompt = negativePromptMap[mind.styleTag] || negapromptdefault;
+  const lora = characterMap[mind.characterTag] || "";
+  const checkpoint = styleMap[mind.styleTag] || "falkons_nami";
 
   try {
     const response = await axios.post(`https://api.runpod.ai/v2/${process.env.NEXT_PUBLIC_SD_RUNPOD_API_ID}/runsync`, {
@@ -51,15 +63,19 @@ const generateImage = async (prompt: string, mind: Mind) => {
         prompt: loraprompt + lora +", "+ mind.customPrompt + ", " + prompt,
         negative_prompt: negaprompt,
         override_settings: {
-          "sd_model_checkpoint": checkpoint
+          "sd_model_checkpoint": checkpoint,
+          "hires_fix": {
+            "scale": 2,
+            "upscaler": "Latent"
+          }
         },
-        
+        denoising_strength: 0.8,
         steps: 28,
         sampler_index: "DPM++ 2M",
         scheduler: "Karras",
         cfg_scale: 8,
         width: 512,
-        height: 512,
+        height: 762,
       }
     }, {
       headers: {

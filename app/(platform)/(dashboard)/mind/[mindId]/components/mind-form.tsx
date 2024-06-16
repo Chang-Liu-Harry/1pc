@@ -81,30 +81,41 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
     },
   });
   const generateImage = async (prompt: string, styleTag: string, characterTag: string, customPrompt: string) => {
-    console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-    console.log('Supabase Secret:', process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_SECRET);
+    // console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+    // console.log('Supabase Secret:', process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_SECRET);
     const supabase = createClient(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`, `${process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_SECRET}`)
     console.log('current prompt inside generateImage func', prompt)
   
     const characterMap: Record<string, string> = {
       nami: "<lora:nami:0.5>",
-      robin: "<lora:realisticStyle:0.8>",
+      robin_fashion: "<lora:One_Piece_Egghead_arc_female_clothes:0.9>",
       hancock: "<lora:fantasyStyle:0.8>",
     };
   
     const styleMap: Record<string, string> = {
       anime: "falkons_nami",
-      realistic: "MageCheckpoint",
+      anime_fashion: "autismMix",
       fantacy: "ThiefCheckpoint",
     };
   
-    const lora = characterMap[characterTag] || "";
-    const checkpoint = styleMap[styleTag] || "falkons_nami";//default to chilloutmix
+    const negativePromptMap: Record<string, string> = {
+      anime: "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,",
+      anime_fashion: "(multiple views, multiple panels), (((unprofessional-bodies))), ((bad-hands-5)), lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, (muscular, toned), (masturbating), monochrome, (horns) greyscale, spread legs, feet, (smiling female), (cleavage, nude male, nude, nipples), source_furry, source_pony,",
+      fantacy: "bad art, poorly drawn, blurry, text, error, deformed, disfigured, worst quality, low quality,",
+    };
   
-    //const loraprompt = "best quality, ultra high res, (photorealistic:1.4), 1girl, off-shoulder white shirt, black tight skirt, black choker, (faded ash gray messy bun:1), faded ash gray hair, (large breasts:1), looking at viewer, closeup, selfie, slightly blonde hair, pretty,"
-    const loraprompt = ""
-    //const negaprompt = "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,"
-    const negaprompt = "(worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,"
+    const loraPromptMap: Record<string, string> = {
+      nami: "nami, one piece, 1girl, bangle, bangs, bare shoulders, belt, bikini, bikini top only, blue sky, caribbean worlds background, ship handrail, pirate ship, bracelet, breasts, brown eyes, bubble, cleavage, cloud, cowboy shot, day, denim, earrings, floating hair, green belt, green bikini, groin, jeans, jewelry, large breasts, log pose, long hair, looking at viewer, navel, orange hair, pants, shoulder tattoo, sidelocks, sky, smile, solo, standing, stomach, swimsuit, tattoo on shoulder, ((masterpiece)), topless, nipples, nice hands, perfect hands",
+      robin_fashion: "score_9, score_8_up, score_7_up, score_6_up, score_5_up, score_4_up, thick lines, anime, masterpiece, egghd, 1girl, solo, long hair, breasts, looking at viewer, smile, large breasts, black hair, thighhighs, long sleeves, navel, cleavage, sitting, underwear, collarbone, panties, jacket, sidelocks, open clothes, sky, midriff, cloud, hand up, stomach, grin, arm up, blue sky, lips, black jacket, crop top, groin, black panties, eyelashes, no bra, highleg, suspenders, cropped legs, zipper, arm at side, high collar, highleg panties, hair slicked back, collared jacket, nico robin BREAK source_anime",
+      fantacy: "bad art, poorly drawn, blurry, text, error, deformed, disfigured, worst quality, low quality,",
+    };
+    const lorapromptdefault = "best quality, ultra high res, (photorealistic:1.4), 1girl, off-shoulder white shirt, black tight skirt, black choker, (faded ash gray messy bun:1), faded ash gray hair, (large breasts:1), looking at viewer, closeup, selfie, slightly blonde hair, pretty,"
+    const loraprompt = loraPromptMap[characterTag] || lorapromptdefault
+    const negapromptdefault = "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,"
+    const negaprompt = negativePromptMap[styleTag] || negapromptdefault;
+    const lora = characterMap[characterTag] || "";
+    const checkpoint = styleMap[styleTag] || "falkons_nami";
+//const negaprompt = "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,"
     try {
       const response = await axios.post(`https://api.runpod.ai/v2/${process.env.NEXT_PUBLIC_SD_RUNPOD_API_ID}/runsync`, {
       //const response = await axios.post(`https://api.runpod.ai/v2/exwbe8nwqkd9kv/runsync`, {
@@ -375,7 +386,7 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="anime">Anime</SelectItem>
-                            <SelectItem value="realistic">Realistic</SelectItem>
+                            <SelectItem value="anime_fashion">Anime Fashion</SelectItem>
                             <SelectItem value="fantasy">Fantasy</SelectItem>
                           </SelectContent>
                         </Select>
@@ -401,7 +412,7 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="robin">Robin(1pc)</SelectItem>
+                            <SelectItem value="robin_fashion">Robin(1pc)</SelectItem>
                             <SelectItem value="nami">Nami(1pc)</SelectItem>
                             <SelectItem value="hancock">Boa Hancock(1pc)</SelectItem>
                           </SelectContent>
