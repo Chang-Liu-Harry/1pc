@@ -116,33 +116,34 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
     const lora = characterMap[characterTag] || "";
     const checkpoint = styleMap[styleTag] || "falkons_nami";
 //const negaprompt = "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,"
+    const payload = {
+      api_name: "txt2img",
+      prompt: loraprompt + lora +", "+ customPrompt + ", " + prompt,
+      negative_prompt: negaprompt,
+      override_settings: {
+        "sd_model_checkpoint": checkpoint,
+      },
+      steps: 28,
+      sampler_index: "DPM++ 2M",
+      scheduler: "Karras",
+      cfg_scale: 8,
+      width: 512,
+      height: 762,
+    }
+    console.log('Payload for API:', payload);
     try {
       const response = await axios.post(`https://api.runpod.ai/v2/${process.env.NEXT_PUBLIC_SD_RUNPOD_API_ID}/runsync`, {
       //const response = await axios.post(`https://api.runpod.ai/v2/exwbe8nwqkd9kv/runsync`, {
-        input: {
-          api_name: "txt2img",
-          prompt: loraprompt + lora +", "+ customPrompt + ", " + prompt,
-          negative_prompt: negaprompt,
-          override_settings: {
-            "sd_model_checkpoint": checkpoint
-          },
-          
-          steps: 28,
-          sampler_index: "DPM++ 2M",
-          scheduler: "Karras",
-          cfg_scale: 8,
-          width: 512,
-          height: 512,
-        }
+        input: payload
       }, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SD_RUNPOD_API_KEY}`,
           //'Authorization': `Bearer 01TDHLUK9CCYKARPIULUS106ZBDEIQMAK8G0MAU5`,
         },
-        timeout: 60000// set timeout to 60s
-        
+        timeout: 60000,// set timeout to 60s,
       })
+      
       console.log('SD_RUNPOD_API_ID:', process.env.NEXT_PUBLIC_SD_RUNPOD_API_ID);
       console.log('SD_RUNPOD_API_KEY:', process.env.NEXT_PUBLIC_SD_RUNPOD_API_KEY); 
   

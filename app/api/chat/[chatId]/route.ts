@@ -64,12 +64,7 @@ const generateImage = async (prompt: string, mind: Mind) => {
         negative_prompt: negaprompt,
         override_settings: {
           "sd_model_checkpoint": checkpoint,
-          "hires_fix": {
-            "scale": 2,
-            "upscaler": "Latent"
-          }
         },
-        denoising_strength: 0.8,
         steps: 28,
         sampler_index: "DPM++ 2M",
         scheduler: "Karras",

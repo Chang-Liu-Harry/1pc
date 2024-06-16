@@ -46,7 +46,7 @@ export default async function RootPage({
     <div className="h-full p-4 space-y-2">
 
       <SearchInput />
-      <Categories data={categories} />
+      {/* <Categories data={categories} /> */}
       <NoticeBar />  {/* Add NoticeBar here */}
       <Minds data={data} />
     </div>
