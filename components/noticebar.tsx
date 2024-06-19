@@ -12,7 +12,7 @@ const NoticeBar = () => {
   return (
     <div className="bg-blue-500 text-white p-4 text-center relative flex items-center justify-between m-0">
       <p className="m-0">
-        Tips: Using <strong>**your wish here**</strong> in your messages will be interpreted by the AI as events that have already happened. You know what I mean? 😉
+        Tips: Using <strong>*your wish here*</strong> in your messages will be interpreted by the AI as events that have already happened. You know what I mean? 😉
       </p>
       <button 
         className="absolute right-4 text-white bg-transparent border-none text-2xl font-bold"

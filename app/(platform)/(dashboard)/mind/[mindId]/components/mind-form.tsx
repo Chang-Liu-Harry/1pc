@@ -41,7 +41,7 @@ const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
   description: z.string().min(1, { message: "Description is required." }),
   instructions: z.string().min(50, { message: "Instructions require at least 50 characters." }),
-  seed: z.string().min(50, { message: "Seed requires at least 50 characters." }),
+  seed: z.string().min(0, { message: "Conversation Example needed" }),
   src: z.string().min(1, { message: "Image is required." }),
   categoryId: z.string().min(1, { message: "Category is required" }),
   //optional parts
@@ -88,26 +88,28 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
   
     const characterMap: Record<string, string> = {
       nami: "<lora:nami:0.5>",
-      robin_fashion: "<lora:One_Piece_Egghead_arc_female_clothes:0.9>",
+      robin_fashion: "<lora:opfashion:0.9>",
       hancock: "<lora:fantasyStyle:0.8>",
+      yamato:"<lora:yamatochan:1>"
     };
   
     const styleMap: Record<string, string> = {
       anime: "falkons_nami",
-      anime_fashion: "autismMix",
-      fantacy: "ThiefCheckpoint",
+      anime_fashion: "drbob",
+      fantasy: "ponydiffusion",
     };
   
     const negativePromptMap: Record<string, string> = {
       anime: "paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans,",
-      anime_fashion: "(multiple views, multiple panels), (((unprofessional-bodies))), ((bad-hands-5)), lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, (muscular, toned), (masturbating), monochrome, (horns) greyscale, spread legs, feet, (smiling female), (cleavage, nude male, nude, nipples), source_furry, source_pony,",
-      fantacy: "bad art, poorly drawn, blurry, text, error, deformed, disfigured, worst quality, low quality,",
+      anime_fashion: "easynegative, incomplete clothes, bad hand,By bad artist,easynegative,negative_hand, pointy ears, elf ears, paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)),((grayscale:2)), skin spots, acnes, skin blemishes, age spot, glans, lowres, bad anatomy, bad hands, text, error, (missing fingers:2),extra digit, fewer digits, cropped, worstquality, low quality, normal quality,jpegartifacts,signature, watermark, username,blurry,bad feet,cropped,poorly drawn hands,poorly drawn face,mutation,deformed, extra limbs,extra arms,extra legs,malformed limbs,fused fingers,too many fingers,long neck,cross-eyed,mutated hands,polar lowres,bad body,bad proportions,gross proportions,text,error,missing fingers,missing arms,missing legs,",
+      fantasy: "bad art, poorly drawn, blurry, text, error, deformed, disfigured, worst quality, low quality,",
     };
   
     const loraPromptMap: Record<string, string> = {
       nami: "nami, one piece, 1girl, bangle, bangs, bare shoulders, belt, bikini, bikini top only, blue sky, caribbean worlds background, ship handrail, pirate ship, bracelet, breasts, brown eyes, bubble, cleavage, cloud, cowboy shot, day, denim, earrings, floating hair, green belt, green bikini, groin, jeans, jewelry, large breasts, log pose, long hair, looking at viewer, navel, orange hair, pants, shoulder tattoo, sidelocks, sky, smile, solo, standing, stomach, swimsuit, tattoo on shoulder, ((masterpiece)), topless, nipples, nice hands, perfect hands",
       robin_fashion: "score_9, score_8_up, score_7_up, score_6_up, score_5_up, score_4_up, thick lines, anime, masterpiece, egghd, 1girl, solo, long hair, breasts, looking at viewer, smile, large breasts, black hair, thighhighs, long sleeves, navel, cleavage, sitting, underwear, collarbone, panties, jacket, sidelocks, open clothes, sky, midriff, cloud, hand up, stomach, grin, arm up, blue sky, lips, black jacket, crop top, groin, black panties, eyelashes, no bra, highleg, suspenders, cropped legs, zipper, arm at side, high collar, highleg panties, hair slicked back, collared jacket, nico robin BREAK source_anime",
-      fantacy: "bad art, poorly drawn, blurry, text, error, deformed, disfigured, worst quality, low quality,",
+      fantasy: "bad art, poorly drawn, blurry, text, error, deformed, disfigured, worst quality, low quality,",
+      yamato:"an illustration in the art-style of<lora:opsaga:0.5>,( wanostyle),1 girl,mature female,(best quality:1),(highly detailed:1),(1girl,solo:1.3),(tall female:1.5),28years old,shiny skin,shiny hair,breasts,yamato \(one piece\),(multicolored hair:1),horns,hair ornament,(smile:1.3),yamatowanpi,fit, full body,  wide windows, living room, sideboob"
     };
     const lorapromptdefault = "best quality, ultra high res, (photorealistic:1.4), 1girl, off-shoulder white shirt, black tight skirt, black choker, (faded ash gray messy bun:1), faded ash gray hair, (large breasts:1), looking at viewer, closeup, selfie, slightly blonde hair, pretty,"
     const loraprompt = loraPromptMap[characterTag] || lorapromptdefault
@@ -121,7 +123,7 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
       prompt: loraprompt + lora +", "+ customPrompt + ", " + prompt,
       negative_prompt: negaprompt,
       override_settings: {
-        "sd_model_checkpoint": checkpoint,
+        sd_model_checkpoint: checkpoint,
       },
       steps: 28,
       sampler_index: "DPM++ 2M",
@@ -130,11 +132,27 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
       width: 512,
       height: 762,
     }
+    const payload2 = {
+      api_name: "txt2img",
+      prompt: loraprompt + lora +", "+ customPrompt + ", " + prompt,
+      negative_prompt: negaprompt,
+      override_settings: {
+        sd_model_checkpoint: checkpoint,
+        CLIP_stop_at_last_layers: 2,
+      },
+      hr_scale: 2,
+      steps: 25,
+      sampler_index: "DPM++ 2M",
+      scheduler: "Karras",
+      cfg_scale: 7,
+      width: 512,
+      height: 762,
+    }
     console.log('Payload for API:', payload);
     try {
       const response = await axios.post(`https://api.runpod.ai/v2/${process.env.NEXT_PUBLIC_SD_RUNPOD_API_ID}/runsync`, {
       //const response = await axios.post(`https://api.runpod.ai/v2/exwbe8nwqkd9kv/runsync`, {
-        input: payload
+        input: payload2
       }, {
         headers: {
           'Content-Type': 'application/json',
@@ -188,6 +206,7 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
       const prompt = " ";
       const styleTag = form.getValues('styleTag') || "";
       const characterTag = form.getValues('characterTag') || "";
+      console.log(styleTag, characterTag);
       const customPrompt = form.getValues('customPrompt') || "";
       const imageData = await generateImage(prompt, styleTag, characterTag,customPrompt);
       if (imageData) {
@@ -350,7 +369,7 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
               <FormItem>
                 <FormLabel>Example Conversation</FormLabel>
                 <FormControl>
-                  <Textarea disabled={isLoading} rows={7} className="bg-background resize-none" placeholder="Your seed conversation here..." {...field} />
+                  <Textarea disabled={isLoading} rows={7} className="bg-background resize-none" placeholder="（Optional）" {...field} />
                 </FormControl>
                 <FormDescription>
                   Write a couple of examples of a human chatting with your AI, write expected answers.
@@ -416,6 +435,7 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
                             <SelectItem value="robin_fashion">Robin(1pc)</SelectItem>
                             <SelectItem value="nami">Nami(1pc)</SelectItem>
                             <SelectItem value="hancock">Boa Hancock(1pc)</SelectItem>
+                            <SelectItem value="yamato">Yamato(1pc)</SelectItem>
                           </SelectContent>
                         </Select>
                       </FormControl>

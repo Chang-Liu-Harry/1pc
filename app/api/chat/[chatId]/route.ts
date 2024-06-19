@@ -33,7 +33,7 @@ const generateImage = async (prompt: string, mind: Mind) => {
 
   const styleMap: Record<string, string> = {
     anime: "falkons_nami",
-    anime_fashion: "autismMix",
+    anime_fashion: "autismpony",
     fantacy: "ThiefCheckpoint",
   };
 
