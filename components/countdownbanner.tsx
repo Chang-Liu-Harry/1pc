@@ -3,23 +3,21 @@
 import { useState, useEffect } from 'react';
 
 interface TimeLeft {
-  days?: number;
-  hours?: number;
-  minutes?: number;
-  seconds?: number;
+    minutes?: number;
+    seconds?: number;
+    milliseconds?: number;
 }
 
 const CountdownBanner = () => {
   const calculateTimeLeft = (): TimeLeft => {
-    const difference = +new Date("2024-07-01") - +new Date();
+    const difference = 3600000; // 1 hour in milliseconds
     let timeLeft: TimeLeft = {};
     
     if (difference > 0) {
       timeLeft = {
-        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
         minutes: Math.floor((difference / 1000 / 60) % 60),
-        seconds: Math.floor((difference / 1000) % 60)
+        seconds: Math.floor((difference / 1000) % 60),
+        milliseconds: Math.floor((difference % 1000) / 10) // Convert to 1/100th of a second
       };
     }
     return timeLeft;
@@ -28,28 +26,55 @@ const CountdownBanner = () => {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(calculateTimeLeft());
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setTimeLeft(calculateTimeLeft());
-    }, 1000);
-    return () => clearTimeout(timer);
-  });
+    const timer = setInterval(() => {
+      setTimeLeft((prevTimeLeft) => {
+        const newDifference = 
+          (prevTimeLeft.minutes || 0) * 60000 +
+          (prevTimeLeft.seconds || 0) * 1000 +
+          (prevTimeLeft.milliseconds || 0) * 10 - 10;
 
-  const timerComponents: JSX.Element[] = [];
+        if (newDifference <= 0) {
+          clearInterval(timer);
+          return {};
+        }
 
-  Object.keys(timeLeft).forEach((interval) => {
-    if (!timeLeft[interval as keyof TimeLeft]) {
-      return;
-    }
-    timerComponents.push(
-      <span key={interval} className="font-bold text-pink-600 dark:text-pink-500">
-        {timeLeft[interval as keyof TimeLeft]} {interval}{" "}
-      </span>
-    );
-  });
+        return {
+          minutes: Math.floor((newDifference / 1000 / 60) % 60),
+          seconds: Math.floor((newDifference / 1000) % 60),
+          milliseconds: Math.floor((newDifference % 1000) / 10)
+        };
+      });
+    }, 10); // Update every 10 milliseconds
+    return () => clearInterval(timer);
+  }, []);
 
   return (
-    <div className="bg-gray-100 dark:bg-gray-800 text-black dark:text-white text-center p-2">
-      <span>Up to 75% Off Ends in: {timerComponents.length ? timerComponents : <span>Time&apos;s up!</span>}</span>
+    <div className="flex justify-center py-4">
+      <div className="flex justify-between items-center bg-gray-900 text-white p-4 rounded-lg shadow-lg w-3/4 max-w-4xl">
+        <div className="flex items-center space-x-2">
+          <span className="bg-pink-600 p-1 rounded-full">🎉</span>
+          <span className="uppercase text-sm font-bold">First Subscription</span>
+        </div>
+        <span className="bg-pink-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+          Up to 75% Off
+        </span>
+        <div className="flex items-center bg-gray-700 text-white px-3 py-1 rounded-full text-sm font-bold">
+          <div className="flex flex-col items-center mx-1">
+            <span className="text-xl w-8 text-center">{timeLeft.minutes?.toString().padStart(2, '0')}</span>
+            <span className="text-xs">Min</span>
+          </div>
+          <span className="text-xl">:</span>
+          <div className="flex flex-col items-center mx-1">
+            <span className="text-xl w-8 text-center">{timeLeft.seconds?.toString().padStart(2, '0')}</span>
+            <span className="text-xs">Sec</span>
+          </div>
+          <span className="text-xl">:</span>
+          <div className="flex flex-col items-center mx-1">
+            <span className="text-xl w-8 text-center">{timeLeft.milliseconds?.toString().padStart(2, '0')}</span>
+            <span className="text-xs">Ms</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
