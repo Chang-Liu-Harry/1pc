@@ -49,7 +49,7 @@ const CountdownBanner = () => {
 
   return (
     <div className="bg-gray-100 dark:bg-gray-800 text-black dark:text-white text-center p-2">
-      <span>Up to 75% Off Ends in: {timerComponents.length ? timerComponents : <span>Time's up!</span>}</span>
+      <span>Up to 75% Off Ends in: {timerComponents.length ? timerComponents : <span>Time&apos;s up!</span>}</span>
     </div>
   );
 };
