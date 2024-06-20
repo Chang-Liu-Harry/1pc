@@ -1,6 +1,5 @@
-"use client";
-
-import { useState, useEffect } from 'react';
+"use client"
+import React, { useState, useEffect } from 'react';
 import { SubscriptionButton } from "@/components/subscription-button";
 import CountdownBanner from '@/components/countdownbanner';
 
@@ -9,17 +8,17 @@ interface Plan {
   discount: string;
   price: number;
   originalPrice: number;
+  id: string; // Add id property
 }
 
 const SettingsPage = () => {
   const [isPro, setIsPro] = useState<boolean>(false);
-  const [selectedPlan, setSelectedPlan] = useState<string>('12 months');
-  const [price, setPrice] = useState<number>(5.99);
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
 
   const plans: Plan[] = [
-    { duration: '12 months', discount: '75% off', price: 5.99, originalPrice: 25.99 },
-    { duration: '3 months', discount: '60% off', price: 9.99, originalPrice: 25.99 },
-    { duration: '1 month', discount: '50% off', price: 12.99, originalPrice: 25.99 },
+    { id: "12_month", duration: '12 months', discount: '75% off', price: 5.99, originalPrice: 25.99 },
+    { id: "3_month", duration: '3 months', discount: '60% off', price: 9.99, originalPrice: 25.99 },
+    { id: "1_month", duration: '1 month', discount: '50% off', price: 12.99, originalPrice: 25.99 },
   ];
 
   useEffect(() => {
@@ -32,8 +31,7 @@ const SettingsPage = () => {
   }, []);
 
   const handlePlanClick = (plan: Plan) => {
-    setSelectedPlan(plan.duration);
-    setPrice(plan.price);
+    setSelectedPlan(plan);
   };
 
   return (
@@ -49,8 +47,8 @@ const SettingsPage = () => {
           <div className="space-y-4">
             {plans.map((plan) => (
               <div 
-                key={plan.duration} 
-                className={`flex justify-between items-center border border-gray-300 dark:border-gray-700 p-4 rounded-lg cursor-pointer ${selectedPlan === plan.duration ? 'bg-gray-200 dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-800'}`}
+                key={plan.id} 
+                className={`flex justify-between items-center border border-gray-300 dark:border-gray-700 p-4 rounded-lg cursor-pointer ${selectedPlan?.id === plan.id ? 'bg-gray-200 dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-800'}`}
                 onClick={() => handlePlanClick(plan)}
               >
                 <div>
@@ -63,12 +61,13 @@ const SettingsPage = () => {
           </div>
           
           <div className="mt-6 flex justify-center space-x-4">
-            <button className="bg-pink-600 hover:bg-pink-700 text-white py-2 px-6 rounded-md">
-              Pay with Credit / Debit Card
-            </button>
-            <button className="bg-gray-600 hover:bg-gray-700 text-white py-2 px-6 rounded-md">
-              Pay with Crypto
-            </button>
+            {selectedPlan && (
+              <SubscriptionButton
+                isPro={isPro}
+                planId={selectedPlan.id}
+                buttonText={`Pay with Credit / Debit Card`}
+              />
+            )}
           </div>
         </div>
         
@@ -86,8 +85,6 @@ const SettingsPage = () => {
           </ul>
         </div>
       </div>
-
-      <SubscriptionButton isPro={isPro} />
     </div>
   );
 }
