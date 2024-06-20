@@ -21,8 +21,8 @@ export default async function RootPage({
     }
   }) : undefined;
 
-  // Trim the search term to remove any leading or trailing spaces
-  const trimmedName = searchParams.name.trim();
+  // Check if searchParams.name is defined before trimming
+  const trimmedName = searchParams.name ? searchParams.name.trim() : '';
 
   const data = await prismadb.mind.findMany({
     where: {
