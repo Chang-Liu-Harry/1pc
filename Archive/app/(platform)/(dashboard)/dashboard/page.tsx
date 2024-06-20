@@ -21,15 +21,11 @@ export default async function RootPage({
     }
   }) : undefined;
 
-  // Trim the search term to remove any leading or trailing spaces
-  const trimmedName = searchParams.name.trim();
-
   const data = await prismadb.mind.findMany({
     where: {
       categoryId: cId?.id,
       name: {
-        contains: trimmedName,
-        mode: 'insensitive', // Optional: if you want a case-insensitive search
+        search: searchParams.name,
       },
     },
     orderBy: {
@@ -48,6 +44,7 @@ export default async function RootPage({
 
   return (
     <div className="h-full p-4 space-y-2">
+
       <SearchInput />
       {/* <Categories data={categories} /> */}
       <NoticeBar />  {/* Add NoticeBar here */}

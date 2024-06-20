@@ -1,0 +1,73 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("NEXT_PUBLIC_DATABASE_URL")
+  directUrl = env("NEXT_PUBLIC_DIRECT_URL")
+}
+
+model Category {
+  id    String @id @default(uuid())
+  name  String
+  minds Mind[]
+}
+
+model Mind {
+  id           String @id @default(uuid())
+  userId       String
+  userName     String
+  src          String
+  name         String @db.Text
+  description  String
+  instructions String @db.Text
+  seed         String @db.Text
+  styleTag     String 
+  characterTag String 
+  customPrompt String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+
+  messages Message[]
+  // @@fulltext([name])
+
+  @@index([categoryId])
+}
+
+enum Role {
+  user
+  system
+  assistant
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  role      Role
+  type      String
+  content   String   @db.Text
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mindId String
+  userId String
+
+  mind Mind @relation(fields: [mindId], references: [id], onDelete: Cascade)
+
+  @@index([mindId])
+}
+
+model UserSubscription {
+  id                     String    @id @default(cuid())
+  userId                 String    @unique
+  stripeCustomerId       String?   @unique @map(name: "stripe_customer_id")
+  stripeSubscriptionId   String?   @unique @map(name: "stripe_subscription_id")
+  stripePriceId          String?   @map(name: "stripe_price_id")
+  stripeCurrentPeriodEnd DateTime? @map(name: "stripe_current_period_end")
+}
