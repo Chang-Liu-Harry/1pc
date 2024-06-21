@@ -10,7 +10,7 @@ const RootLayout = async ({
 }) => {
   const isPro = await checkSubscription();
   return (
-    <div className="h-full">
+    <div className="h-screen">
       <Navbar isPro={isPro} />
       <div className="flex">
       </div>
