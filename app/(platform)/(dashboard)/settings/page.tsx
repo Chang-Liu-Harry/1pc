@@ -27,7 +27,7 @@ const SettingsPage = () => {
   ];
 
   useEffect(() => {
-    const fetchSubscriptionStatus = async () => {
+    const checkUserStatus = async () => {
       const response = await fetch('/api/subscription');
       const data = await response.json();
       setIsPro(data.isPro);
@@ -58,9 +58,24 @@ const SettingsPage = () => {
 
     const cachedIsPro = localStorage.getItem('isPro');
     if (cachedIsPro !== null) {
-      setIsPro(JSON.parse(cachedIsPro));
+      const isProStatus = JSON.parse(cachedIsPro);
+      setIsPro(isProStatus);
+      if (isProStatus) {
+        const fetchDetails = async () => {
+          const detailsResponse = await fetch('/api/subscription/details');
+          const detailsData = await detailsResponse.json();
+          setSubscriptionDetails(detailsData);
+
+          const portalResponse = await fetch('/api/subscription/portal', {
+            method: 'POST',
+          });
+          const portalData = await portalResponse.json();
+          setPortalUrl(portalData.url);
+        };
+        fetchDetails();
+      }
     } else {
-      fetchSubscriptionStatus();
+      checkUserStatus();
     }
   }, []);
 
