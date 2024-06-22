@@ -1,116 +1,34 @@
-import { auth, currentUser } from "@clerk/nextjs";
-import { NextResponse, NextRequest } from "next/server";
-import prismadb from "@/lib/prismadb";
-import { stripe } from "@/lib/stripe";
-import { absoluteUrl } from "@/lib/utils";
+import { NextRequest, NextResponse } from 'next/server';
+import { stripe } from '@/lib/stripe';
+import prismadb from '@/lib/prismadb';
+import { auth } from '@clerk/nextjs';
 
-const settingsUrl = absoluteUrl("/settings");
-
-const priceMapping: Record<string, any> = {
- "12_month": {
-    currency: "USD",
-    product_data: {
-      name: "OnepieceAI.Chat Annual Subscription",
-      description: "Yearly Access ",
-    },
-    unit_amount: 7198, // $71.98 for 12 months upfront (5.99 * 12 * 100)
-    recurring: {
-      interval: "year",
-      interval_count: 1,
-    },
-  },
-  "3_month": {
-    currency: "USD",
-    product_data: {
-      name: "OnepieceAI.Chat Quarterly Subscription",
-      description: "Quarterly Access ",
-    },
-    unit_amount: 2997, // $29.97 for 3 months upfront (9.99 * 3 * 100)
-    recurring: {
-      interval: "month",
-      interval_count: 3,
-    },
-  },
-  "1_month": {
-    currency: "USD",
-    product_data: {
-      name: "OnepieceAI.Chat Monthly Subscription",
-      description: "Monthly Access ",
-    },
-    unit_amount: 10, // $12.99 for 1 month (12.99 * 100)
-    recurring: {
-      interval: "month",
-    },
-  },
-};
-
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const { userId } = auth();
+
     if (!userId) {
-      return new NextResponse("Unauthorized: Missing user ID", { status: 401 });
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
 
-    let user;
-    try {
-      user = await currentUser();
-    } catch (error) {
-      console.error("[Clerk] Error fetching current user:", error);
-      return new NextResponse("Error fetching current user", { status: 500 });
-    }
-
-    if (!user) {
-      return new NextResponse("Unauthorized: User not found", { status: 401 });
-    }
-
-    const { searchParams } = new URL(req.url);
-    const planId = searchParams.get('planId'); // Get the planId from query parameters
-
-    if (!planId) {
-      return new NextResponse("Invalid plan ID", { status: 400 });
-    }
-
-    // const userSubscription = await prismadb.userSubscription.findUnique({
-    //   where: {
-    //     userId,
-    //   },
-    // });
-
-    // if (userSubscription && userSubscription.stripeCustomerId) {
-    //   const stripeSession = await stripe.billingPortal.sessions.create({
-    //     customer: userSubscription.stripeCustomerId,
-    //     return_url: settingsUrl,
-    //   });
-
-    //   return new NextResponse(JSON.stringify({ url: stripeSession.url }));
-    // }
-
-    const priceData = priceMapping[planId];
-    if (!priceData) {
-      return new NextResponse("Invalid plan ID", { status: 400 });
-    }
-
-    const stripeSession = await stripe.checkout.sessions.create({
-      success_url: settingsUrl,
-      cancel_url: settingsUrl,
-      payment_method_types: ["card"],
-      mode: "subscription",
-      billing_address_collection: "auto",
-      customer_email: user.emailAddresses[0].emailAddress,
-      line_items: [
-        {
-          price_data: priceData,
-          quantity: 1,
-        },
-      ],
-      metadata: {
-        userId,
-      },
+    const userSubscription = await prismadb.userSubscription.findUnique({
+      where: { userId },
     });
 
-    return new NextResponse(JSON.stringify({ url: stripeSession.url }));
+    if (!userSubscription || !userSubscription.stripeCustomerId) {
+      return NextResponse.json({ error: 'Subscription not found or invalid' }, { status: 404 });
+    }
+
+    const settingsUrl = `${req.nextUrl.origin}/settings`;
+
+    const stripeSession = await stripe.billingPortal.sessions.create({
+      customer: userSubscription.stripeCustomerId,
+      return_url: settingsUrl,
+    });
+
+    return NextResponse.json({ url: stripeSession.url }, { status: 200 });
   } catch (error) {
-    console.error("[STRIPE] Error:", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    console.error('Error creating Stripe Customer Portal session:', error);
+    return NextResponse.json({ error: 'Internal server error', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
