@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { SubscriptionButton } from "@/components/subscription-button";
 import CountdownBanner from '@/components/countdownbanner';
+import axios from 'axios';
 
 interface Plan {
   duration: string;
@@ -14,6 +15,7 @@ interface Plan {
 const SettingsPage = () => {
   const [isPro, setIsPro] = useState<boolean>(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [countdownEnd, setCountdownEnd] = useState<number>(Date.now() + 3600000);
 
   const plans: Plan[] = [
     { id: "12_month", duration: '12 months', discount: '75% off', price: 5.99, originalPrice: 25.99 },
@@ -26,10 +28,8 @@ const SettingsPage = () => {
       const response = await fetch('/api/subscription');
       const data = await response.json();
       setIsPro(data.isPro);
-      // Set default selected plan to 1 month plan
       setSelectedPlan(plans.find(plan => plan.id === '1_month') || null);
 
-      // Retrieve the countdown end time from local storage
       const storedCountdownEnd = localStorage.getItem('countdownEnd');
       if (storedCountdownEnd) {
         const countdownEnd = parseInt(storedCountdownEnd);
@@ -47,14 +47,22 @@ const SettingsPage = () => {
     setSelectedPlan(plan);
   };
 
+  const handleCancelSubscription = async () => {
+    try {
+      await axios.post('/api/subscription/cancel');
+      alert('Subscription canceled successfully');
+      setIsPro(false);
+    } catch (error) {
+      console.error('Error canceling subscription', error);
+      alert('Failed to cancel subscription');
+    }
+  };
+
   const handleCountdownFinish = () => {
-    // Reset the countdown to 1 hour
     const newCountdownEnd = Date.now() + 3600000;
     localStorage.setItem('countdownEnd', newCountdownEnd.toString());
     setCountdownEnd(newCountdownEnd);
   };
-
-  const [countdownEnd, setCountdownEnd] = useState<number>(Date.now() + 3600000);
 
   return (
     <div className="h-full p-4 space-y-4 text-black dark:text-white">
@@ -104,6 +112,12 @@ const SettingsPage = () => {
             <li>Fast response time</li>
           </ul>
         </div>
+        
+        {isPro && (
+          <button onClick={handleCancelSubscription} className="mt-4 bg-red-500 text-white py-2 px-4 rounded">
+            Cancel Subscription
+          </button>
+        )}
       </div>
     </div>
   );
