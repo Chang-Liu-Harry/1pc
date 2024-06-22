@@ -9,11 +9,12 @@ interface Plan {
   discount: string;
   price: number;
   originalPrice: number;
-  id: string; // Add id property
+  id: string;
 }
 
 const SettingsPage = () => {
   const [isPro, setIsPro] = useState<boolean>(false);
+  const [portalUrl, setPortalUrl] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [countdownEnd, setCountdownEnd] = useState<number>(Date.now() + 3600000);
 
@@ -39,6 +40,14 @@ const SettingsPage = () => {
         localStorage.setItem('countdownEnd', newCountdownEnd.toString());
         setCountdownEnd(newCountdownEnd);
       }
+
+      if (data.isPro) {
+        const portalResponse = await fetch('/api/subscription/portal', {
+          method: 'POST',
+        });
+        const portalData = await portalResponse.json();
+        setPortalUrl(portalData.url);
+      }
     };
     fetchSubscriptionStatus();
   }, []);
@@ -53,7 +62,7 @@ const SettingsPage = () => {
       alert('Subscription canceled successfully');
       setIsPro(false);
     } catch (error) {
-      console.error('Error canceling subscription', error);
+      console.error('Error canceling subscription:', error);
       alert('Failed to cancel subscription');
     }
   };
@@ -112,11 +121,12 @@ const SettingsPage = () => {
             <li>Fast response time</li>
           </ul>
         </div>
-        
-        {isPro && (
-          <button onClick={handleCancelSubscription} className="mt-4 bg-red-500 text-white py-2 px-4 rounded">
-            Cancel Subscription
-          </button>
+
+        {isPro && portalUrl && (
+          <div className="mt-8">
+            <h4 className="text-lg font-medium mb-2">Manage Your Subscription</h4>
+            <iframe src={portalUrl} width="100%" height="600" frameBorder="0"></iframe>
+          </div>
         )}
       </div>
     </div>
