@@ -28,27 +28,22 @@ const SettingsPage = () => {
 
   useEffect(() => {
     const fetchSubscriptionStatus = async () => {
-      const cachedIsPro = localStorage.getItem('isPro');
-      const cachedCountdownEnd = localStorage.getItem('countdownEnd');
+      const response = await fetch('/api/subscription');
+      const data = await response.json();
+      setIsPro(data.isPro);
+      localStorage.setItem('isPro', JSON.stringify(data.isPro));
 
-      if (cachedIsPro !== null) {
-        setIsPro(JSON.parse(cachedIsPro));
-      } else {
-        const response = await fetch('/api/subscription');
-        const data = await response.json();
-        setIsPro(data.isPro);
-        localStorage.setItem('isPro', JSON.stringify(data.isPro));
-      }
-
-      if (cachedCountdownEnd) {
-        setCountdownEnd(parseInt(cachedCountdownEnd));
+      const storedCountdownEnd = localStorage.getItem('countdownEnd');
+      if (storedCountdownEnd) {
+        const countdownEnd = parseInt(storedCountdownEnd);
+        setCountdownEnd(countdownEnd);
       } else {
         const newCountdownEnd = Date.now() + 3600000; // 1 hour from now
         localStorage.setItem('countdownEnd', newCountdownEnd.toString());
         setCountdownEnd(newCountdownEnd);
       }
 
-      if (isPro) {
+      if (data.isPro) {
         const detailsResponse = await fetch('/api/subscription/details');
         const detailsData = await detailsResponse.json();
         setSubscriptionDetails(detailsData);
@@ -60,8 +55,14 @@ const SettingsPage = () => {
         setPortalUrl(portalData.url);
       }
     };
-    fetchSubscriptionStatus();
-  }, [isPro]);
+
+    const cachedIsPro = localStorage.getItem('isPro');
+    if (cachedIsPro !== null) {
+      setIsPro(JSON.parse(cachedIsPro));
+    } else {
+      fetchSubscriptionStatus();
+    }
+  }, []);
 
   const handlePlanClick = (plan: Plan) => {
     setSelectedPlan(plan);
