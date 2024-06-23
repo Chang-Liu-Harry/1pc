@@ -4,6 +4,7 @@ import { SubscriptionButton } from "@/components/subscription-button";
 import CountdownBanner from '@/components/countdownbanner';
 import axios from 'axios';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 interface Plan {
   duration: string;
@@ -31,7 +32,6 @@ const SettingsPage = () => {
       const response = await fetch('/api/subscription');
       const data = await response.json();
       setIsPro(data.isPro);
-      localStorage.setItem('isPro', JSON.stringify(data.isPro));
 
       const storedCountdownEnd = localStorage.getItem('countdownEnd');
       if (storedCountdownEnd) {
@@ -56,27 +56,7 @@ const SettingsPage = () => {
       }
     };
 
-    const cachedIsPro = localStorage.getItem('isPro');
-    if (cachedIsPro !== null) {
-      const isProStatus = JSON.parse(cachedIsPro);
-      setIsPro(isProStatus);
-      if (isProStatus) {
-        const fetchDetails = async () => {
-          const detailsResponse = await fetch('/api/subscription/details');
-          const detailsData = await detailsResponse.json();
-          setSubscriptionDetails(detailsData);
-
-          const portalResponse = await fetch('/api/subscription/portal', {
-            method: 'POST',
-          });
-          const portalData = await portalResponse.json();
-          setPortalUrl(portalData.url);
-        };
-        fetchDetails();
-      }
-    } else {
-      checkUserStatus();
-    }
+    checkUserStatus();
   }, []);
 
   const handlePlanClick = (plan: Plan) => {
@@ -98,9 +78,9 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="h-full p-6 space-y-6 text-black dark:text-white">
+    <div className="relative h-full p-6 space-y-6 text-black dark:text-white">
       {!isPro && <CountdownBanner countdownEnd={countdownEnd} onCountdownFinish={handleCountdownFinish} />}
-      <div className="max-w-4xl mx-auto bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg">
+      <div className="relative max-w-3xl mx-auto bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg z-10 overflow-hidden">
         <motion.div 
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }} 
@@ -108,36 +88,38 @@ const SettingsPage = () => {
         >
           <h3 className="text-4xl font-semibold text-center mb-6 text-yellow-500">{isPro ? "Welcome, VIP!" : "Choose Your Destiny"}</h3>
           <p className="text-center text-gray-600 dark:text-gray-400 mb-6">{isPro ? "You're in the exclusive club now. Enjoy the perks!" : "Unlock amazing features and become legendary!"}</p>
-          <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-            <h4 className="text-xl font-medium text-pink-600 dark:text-pink-500 mb-4">{isPro ? "Upgrade Your Plan" : "Today Only: Insane Discounts!"}</h4>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">Up to 75% off for your first subscription</p>
-            <div className="space-y-4">
-              {plans.map((plan) => (
-                <motion.div
-                  key={plan.id}
-                  className={`flex justify-between items-center border border-gray-300 dark:border-gray-700 p-4 rounded-lg cursor-pointer ${selectedPlan?.id === plan.id ? 'bg-gray-200 dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-800'}`}
-                  onClick={() => handlePlanClick(plan)}
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <div>
-                    <p className="font-semibold text-black dark:text-white">{plan.duration}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{plan.discount}</p>
-                  </div>
-                  <p className="font-bold text-lg text-black dark:text-white">${plan.price}/month</p>
-                </motion.div>
-              ))}
-            </div>
-            <div className="mt-6 flex justify-center space-x-4">
-              <SubscriptionButton
-                isPro={isPro}
-                planId={selectedPlan?.id || "1_month"}
-                buttonText={isPro ? "Upgrade Plan" : "Pay with Discount"}
-              />
-              {isPro && (
-                <button onClick={handleOpenPortal} className="bg-blue-700 text-white py-3 px-6 rounded shadow-lg transition transform hover:scale-105 font-semibold">
-                  Manage Subscription
-                </button>
-              )}
+          <div className="relative flex justify-between items-start bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-lg z-10">
+            <div className="flex-1 z-20">
+              <h4 className="text-xl font-medium text-pink-600 dark:text-pink-500 mb-4">{isPro ? "Upgrade Your Plan" : "Today Only: Insane Discounts!"}</h4>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">Up to 75% off for your first subscription</p>
+              <div className="space-y-4">
+                {plans.map((plan) => (
+                  <motion.div
+                    key={plan.id}
+                    className={`flex justify-between items-center border border-gray-300 dark:border-gray-700 p-4 rounded-lg cursor-pointer ${selectedPlan?.id === plan.id ? 'bg-gray-200 dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-800'}`}
+                    onClick={() => handlePlanClick(plan)}
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <div>
+                      <p className="font-semibold text-black dark:text-white">{plan.duration}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{plan.discount}</p>
+                    </div>
+                    <p className="font-bold text-lg text-black dark:text-white">${plan.price}/month</p>
+                  </motion.div>
+                ))}
+              </div>
+              <div className="mt-6 flex justify-center space-x-4">
+                <SubscriptionButton
+                  isPro={isPro}
+                  planId={selectedPlan?.id || "1_month"}
+                  buttonText={isPro ? "Upgrade Plan" : "Pay with Discount"}
+                />
+                {isPro && (
+                  <button onClick={handleOpenPortal} className="bg-blue-700 text-white py-3 px-6 rounded shadow-lg transition transform hover:scale-105 font-semibold">
+                    Manage Subscription
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           {isPro && (
@@ -163,6 +145,42 @@ const SettingsPage = () => {
             </ul>
           </div>
         </motion.div>
+      </div>
+      <div className="absolute inset-0 overflow-hidden z-0">
+        <div className="relative w-full h-full">
+          <motion.div 
+            className="absolute top-0 left-0 w-1/4 h-full"
+            initial={{ x: '100%' }} 
+            animate={{ x: '-100%' }} 
+            transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+          >
+            <Image src="/model1.png" alt="Model 1" layout="fill" objectFit="contain" />
+          </motion.div>
+          <motion.div 
+            className="absolute top-0 left-0 w-1/4 h-full"
+            initial={{ x: '150%' }} 
+            animate={{ x: '-50%' }} 
+            transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+          >
+            <Image src="/model2.png" alt="Model 2" layout="fill" objectFit="contain" />
+          </motion.div>
+          <motion.div 
+            className="absolute top-0 left-0 w-1/4 h-full"
+            initial={{ x: '200%' }} 
+            animate={{ x: '0%' }} 
+            transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+          >
+            <Image src="/model3.png" alt="Model 3" layout="fill" objectFit="contain" />
+          </motion.div>
+          <motion.div 
+            className="absolute top-0 left-0 w-1/4 h-full"
+            initial={{ x: '250%' }} 
+            animate={{ x: '50%' }} 
+            transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+          >
+            <Image src="/model4.png" alt="Model 4" layout="fill" objectFit="contain" />
+          </motion.div>
+        </div>
       </div>
     </div>
   );
