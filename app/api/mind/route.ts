@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const user = await currentUser();
-    const { src, name, description, instructions, seed, categoryId, styleTag, characterTag, customPrompt} = body;
+    const { src, name, description, instructions, seed, categoryId, styleTag, characterTag, customPrompt, medias } = body;
 
     if (!user || !user.id || !user.username) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -23,7 +23,6 @@ export async function POST(req: Request) {
       return new NextResponse("Pro subscription required", { status: 403 });
     }
 
-
     const mind = await prismadb.mind.create({
       data: {
         categoryId,
@@ -37,6 +36,7 @@ export async function POST(req: Request) {
         styleTag,
         characterTag,
         customPrompt,
+        medias: medias || [], // Ensure medias is always an array
       }
     });
 
