@@ -1,4 +1,5 @@
-'use client'
+'use client';
+import { useEffect, useState } from 'react';
 import { cn } from "@/lib/utils";
 import { UserButton, SignInButton, SignUpButton, useUser } from "@clerk/nextjs";
 import { Menu, Sparkles } from "lucide-react";
@@ -14,15 +15,20 @@ import { useProModal } from "@/hooks/use-pro-modal";
 const font = Poppins({
   weight: "600",
   subsets: ["latin"],
-})
+});
+
 interface NavbarProps {
   isPro: boolean;
 }
-const Navbar = ({
-  isPro
-}: NavbarProps) => {
+
+const Navbar = ({ isPro }: NavbarProps) => {
   const proModal = useProModal();
-  const { isSignedIn } = useUser();
+  const { isSignedIn, user } = useUser();
+  const [isSignedInState, setIsSignedInState] = useState(isSignedIn);
+
+  useEffect(() => {
+    setIsSignedInState(isSignedIn);
+  }, [isSignedIn, user]);
 
   return (
     <div className="fixed w-full z-50 flex justify-between items-center py-2 px-4 border-b border-primary/10 bg-secondary h-16">
@@ -36,7 +42,7 @@ const Navbar = ({
       </div>
 
       <div className="flex items-center gap-x-3">
-        {!isSignedIn && (
+        {!isSignedInState && (
           <>
             <SignInButton>
               <Button size="sm" variant="outline" className="bg-white text-black border border-gray-300 rounded-full px-4 py-2 hover:bg-gray-100 transition ease-in-out duration-300">
@@ -50,7 +56,7 @@ const Navbar = ({
             </SignUpButton>
           </>
         )}
-        {isSignedIn && (
+        {isSignedInState && (
           <>
             {!isPro && (
               <Button onClick={proModal.onOpen} size="sm" variant="premium" className="bg-white text-white border border-gray-300 rounded-full px-4 py-2 hover:bg-gray-100 transition ease-in-out duration-300">
@@ -67,6 +73,6 @@ const Navbar = ({
       </div>
     </div>
   );
-}
+};
 
 export default Navbar;
