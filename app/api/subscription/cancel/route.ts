@@ -15,20 +15,22 @@ export async function POST(req: NextRequest) {
       where: { userId },
     });
 
-    if (!userSubscription || !userSubscription.stripeCustomerId) {
-      return NextResponse.json({ error: 'Subscription not found or invalid' }, { status: 404 });
+    if (!userSubscription || !userSubscription.stripeSubscriptionId) {
+      return NextResponse.json({ error: 'Subscription not found' }, { status: 404 });
     }
 
-    const settingsUrl = `${req.nextUrl.origin}/settings`;
+    console.log('Canceling subscription with ID:', userSubscription.stripeSubscriptionId);
 
-    const stripeSession = await stripe.billingPortal.sessions.create({
-      customer: userSubscription.stripeCustomerId,
-      return_url: settingsUrl,
+    await stripe.subscriptions.cancel(userSubscription.stripeSubscriptionId);
+
+    await prismadb.userSubscription.update({
+      where: { userId },
+      data: { stripeSubscriptionId: null, stripeCurrentPeriodEnd: null },
     });
 
-    return NextResponse.json({ url: stripeSession.url }, { status: 200 });
+    return NextResponse.json({ message: 'Subscription canceled successfully' }, { status: 200 });
   } catch (error) {
-    console.error('Error creating Stripe Customer Portal session:', error);
+    console.error('Error canceling subscription:', error);
     return NextResponse.json({ error: 'Internal server error', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

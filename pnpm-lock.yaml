@@ -4,161 +4,156 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-importers:
+dependencies:
+  '@clerk/nextjs':
+    specifier: ^4.29.5
+    version: 4.29.5(next@14.1.0)(react-dom@18.2.0)(react@18.2.0)
+  '@google/generative-ai':
+    specifier: ^0.3.1
+    version: 0.3.1
+  '@hookform/resolvers':
+    specifier: ^3.3.4
+    version: 3.3.4(react-hook-form@7.50.1)
+  '@opentelemetry/api':
+    specifier: ^0.19.0
+    version: 0.19.0
+  '@pinecone-database/pinecone':
+    specifier: ^0.1.6
+    version: 0.1.6
+  '@prisma/client':
+    specifier: 5.9.1
+    version: 5.9.1(prisma@5.9.1)
+  '@radix-ui/react-avatar':
+    specifier: ^1.0.4
+    version: 1.0.4(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0)(react@18.2.0)
+  '@radix-ui/react-dialog':
+    specifier: ^1.0.5
+    version: 1.0.5(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0)(react@18.2.0)
+  '@radix-ui/react-dropdown-menu':
+    specifier: ^2.0.6
+    version: 2.0.6(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0)(react@18.2.0)
+  '@radix-ui/react-label':
+    specifier: ^2.0.2
+    version: 2.0.2(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0)(react@18.2.0)
+  '@radix-ui/react-select':
+    specifier: ^2.0.0
+    version: 2.0.0(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0)(react@18.2.0)
+  '@radix-ui/react-separator':
+    specifier: ^1.0.3
+    version: 1.0.3(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0)(react@18.2.0)
+  '@radix-ui/react-slot':
+    specifier: ^1.0.2
+    version: 1.0.2(@types/react@18.2.48)(react@18.2.0)
+  '@radix-ui/react-toast':
+    specifier: ^1.1.5
+    version: 1.1.5(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0)(react@18.2.0)
+  '@supabase/supabase-js':
+    specifier: ^2.42.4
+    version: 2.42.4
+  '@upstash/ratelimit':
+    specifier: ^1.0.1
+    version: 1.0.1
+  '@upstash/redis':
+    specifier: ^1.28.4
+    version: 1.28.4
+  ai:
+    specifier: ^3.0.7
+    version: 3.0.7(react@18.2.0)(solid-js@1.8.15)(svelte@4.2.12)(vue@3.4.21)(zod@3.22.4)
+  axios:
+    specifier: ^1.6.7
+    version: 1.6.7
+  base64-arraybuffer:
+    specifier: ^1.0.2
+    version: 1.0.2
+  class-variance-authority:
+    specifier: ^0.7.0
+    version: 0.7.0
+  clsx:
+    specifier: ^2.1.0
+    version: 2.1.0
+  framer-motion:
+    specifier: ^11.2.11
+    version: 11.2.11(react-dom@18.2.0)(react@18.2.0)
+  langchain:
+    specifier: 0.0.92
+    version: 0.0.92(@pinecone-database/pinecone@0.1.6)(@supabase/supabase-js@2.42.4)(@upstash/redis@1.28.4)(axios@1.6.7)
+  lucide-react:
+    specifier: ^0.317.0
+    version: 0.317.0(react@18.2.0)
+  nanoid:
+    specifier: ^5.0.7
+    version: 5.0.7
+  next:
+    specifier: 14.1.0
+    version: 14.1.0(@opentelemetry/api@0.19.0)(react-dom@18.2.0)(react@18.2.0)
+  next-cloudinary:
+    specifier: ^6.0.1
+    version: 6.0.1(next@14.1.0)(react@18.2.0)
+  next-themes:
+    specifier: ^0.2.1
+    version: 0.2.1(next@14.1.0)(react-dom@18.2.0)(react@18.2.0)
+  query-string:
+    specifier: ^8.2.0
+    version: 8.2.0
+  react:
+    specifier: ^18
+    version: 18.2.0
+  react-dom:
+    specifier: ^18
+    version: 18.2.0(react@18.2.0)
+  react-hook-form:
+    specifier: ^7.50.1
+    version: 7.50.1(react@18.2.0)
+  react-spinners:
+    specifier: ^0.13.8
+    version: 0.13.8(react-dom@18.2.0)(react@18.2.0)
+  stripe:
+    specifier: ^14.22.0
+    version: 14.22.0
+  tailwind-merge:
+    specifier: ^2.2.1
+    version: 2.2.1
+  tailwindcss-animate:
+    specifier: ^1.0.7
+    version: 1.0.7(tailwindcss@3.4.1)
+  zod:
+    specifier: ^3.22.4
+    version: 3.22.4
+  zustand:
+    specifier: ^4.5.2
+    version: 4.5.2(@types/react@18.2.48)(react@18.2.0)
 
-  .:
-    dependencies:
-      '@clerk/nextjs':
-        specifier: ^4.29.5
-        version: 4.29.5(next@14.1.0(@opentelemetry/api@0.19.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@google/generative-ai':
-        specifier: ^0.3.1
-        version: 0.3.1
-      '@hookform/resolvers':
-        specifier: ^3.3.4
-        version: 3.3.4(react-hook-form@7.50.1(react@18.2.0))
-      '@opentelemetry/api':
-        specifier: ^0.19.0
-        version: 0.19.0
-      '@pinecone-database/pinecone':
-        specifier: ^0.1.6
-        version: 0.1.6
-      '@prisma/client':
-        specifier: 5.9.1
-        version: 5.9.1(prisma@5.9.1)
-      '@radix-ui/react-avatar':
-        specifier: ^1.0.4
-        version: 1.0.4(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@radix-ui/react-dialog':
-        specifier: ^1.0.5
-        version: 1.0.5(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@radix-ui/react-dropdown-menu':
-        specifier: ^2.0.6
-        version: 2.0.6(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@radix-ui/react-icons':
-        specifier: ^1.3.0
-        version: 1.3.0(react@18.2.0)
-      '@radix-ui/react-label':
-        specifier: ^2.0.2
-        version: 2.0.2(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@radix-ui/react-select':
-        specifier: ^2.0.0
-        version: 2.0.0(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@radix-ui/react-separator':
-        specifier: ^1.0.3
-        version: 1.0.3(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@radix-ui/react-slot':
-        specifier: ^1.0.2
-        version: 1.0.2(@types/react@18.2.48)(react@18.2.0)
-      '@radix-ui/react-toast':
-        specifier: ^1.1.5
-        version: 1.1.5(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@radix-ui/themes':
-        specifier: ^3.1.1
-        version: 3.1.1(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@supabase/supabase-js':
-        specifier: ^2.42.4
-        version: 2.42.4
-      '@upstash/ratelimit':
-        specifier: ^1.0.1
-        version: 1.0.1
-      '@upstash/redis':
-        specifier: ^1.28.4
-        version: 1.28.4
-      ai:
-        specifier: ^3.0.7
-        version: 3.0.7(react@18.2.0)(solid-js@1.8.15)(svelte@4.2.12)(vue@3.4.21(typescript@5.3.3))(zod@3.22.4)
-      axios:
-        specifier: ^1.6.7
-        version: 1.6.7
-      base64-arraybuffer:
-        specifier: ^1.0.2
-        version: 1.0.2
-      class-variance-authority:
-        specifier: ^0.7.0
-        version: 0.7.0
-      clsx:
-        specifier: ^2.1.0
-        version: 2.1.0
-      langchain:
-        specifier: 0.0.92
-        version: 0.0.92(@pinecone-database/pinecone@0.1.6)(@supabase/postgrest-js@1.15.2)(@supabase/supabase-js@2.42.4)(@upstash/redis@1.28.4)(axios@1.6.7)(ignore@5.3.0)
-      lucide-react:
-        specifier: ^0.317.0
-        version: 0.317.0(react@18.2.0)
-      nanoid:
-        specifier: ^5.0.7
-        version: 5.0.7
-      next:
-        specifier: 14.1.0
-        version: 14.1.0(@opentelemetry/api@0.19.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      next-cloudinary:
-        specifier: ^6.0.1
-        version: 6.0.1(next@14.1.0(@opentelemetry/api@0.19.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react@18.2.0)
-      next-themes:
-        specifier: ^0.2.1
-        version: 0.2.1(next@14.1.0(@opentelemetry/api@0.19.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      query-string:
-        specifier: ^8.2.0
-        version: 8.2.0
-      react:
-        specifier: ^18
-        version: 18.2.0
-      react-dom:
-        specifier: ^18
-        version: 18.2.0(react@18.2.0)
-      react-hook-form:
-        specifier: ^7.50.1
-        version: 7.50.1(react@18.2.0)
-      react-spinners:
-        specifier: ^0.13.8
-        version: 0.13.8(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      stripe:
-        specifier: ^14.22.0
-        version: 14.22.0
-      tailwind-merge:
-        specifier: ^2.2.1
-        version: 2.2.1
-      tailwindcss-animate:
-        specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.4.1)
-      zod:
-        specifier: ^3.22.4
-        version: 3.22.4
-      zustand:
-        specifier: ^4.5.2
-        version: 4.5.2(@types/react@18.2.48)(react@18.2.0)
-    devDependencies:
-      '@types/node':
-        specifier: ^20
-        version: 20.11.10
-      '@types/react':
-        specifier: ^18
-        version: 18.2.48
-      '@types/react-dom':
-        specifier: ^18
-        version: 18.2.18
-      autoprefixer:
-        specifier: ^10.0.1
-        version: 10.4.17(postcss@8.4.33)
-      eslint:
-        specifier: ^8
-        version: 8.56.0
-      eslint-config-next:
-        specifier: 14.1.0
-        version: 14.1.0(eslint@8.56.0)(typescript@5.3.3)
-      postcss:
-        specifier: ^8
-        version: 8.4.33
-      prisma:
-        specifier: ^5.9.1
-        version: 5.9.1
-      tailwindcss:
-        specifier: ^3.3.0
-        version: 3.4.1
-      typescript:
-        specifier: ^5
-        version: 5.3.3
+devDependencies:
+  '@types/node':
+    specifier: ^20
+    version: 20.11.10
+  '@types/react':
+    specifier: ^18
+    version: 18.2.48
+  '@types/react-dom':
+    specifier: ^18
+    version: 18.2.18
+  autoprefixer:
+    specifier: ^10.0.1
+    version: 10.4.17(postcss@8.4.33)
+  eslint:
+    specifier: ^8
+    version: 8.56.0
+  eslint-config-next:
+    specifier: 14.1.0
+    version: 14.1.0(eslint@8.56.0)(typescript@5.3.3)
+  postcss:
+    specifier: ^8
+    version: 8.4.33
+  prisma:
+    specifier: ^5.9.1
+    version: 5.9.1
+  tailwindcss:
+    specifier: ^3.3.0
+    version: 3.4.1
+  typescript:
+    specifier: ^5
+    version: 5.3.3
 
 packages:
 
@@ -5912,7 +5907,28 @@ snapshots:
 
   fraction.js@4.3.7: {}
 
-  fs.realpath@1.0.0: {}
+  /framer-motion@11.2.11(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-n+ozoEzgJu/2h9NoQMokF+CwNqIRVyuRC4RwMPwklfrrTjbVV32k9uBIgqYAwn7Jfpt5LuDVCtT57MWz1FbaLw==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0
+      react-dom: ^18.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      tslib: 2.6.2
+    dev: false
+
+  /fs.realpath@1.0.0:
+    resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
+    dev: true
 
   fsevents@2.3.3:
     optional: true

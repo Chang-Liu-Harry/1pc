@@ -3,7 +3,7 @@ import { stripe } from '@/lib/stripe';
 import prismadb from '@/lib/prismadb';
 import { auth } from '@clerk/nextjs';
 
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const { userId } = auth();
 
@@ -15,20 +15,16 @@ export async function POST(req: NextRequest) {
       where: { userId },
     });
 
-    if (!userSubscription || !userSubscription.stripeCustomerId) {
+    if (!userSubscription || !userSubscription.stripeCustomerId || !userSubscription.stripeSubscriptionId) {
       return NextResponse.json({ error: 'Subscription not found or invalid' }, { status: 404 });
     }
 
-    const settingsUrl = `${req.nextUrl.origin}/settings`;
+    const stripeCustomer = await stripe.customers.retrieve(userSubscription.stripeCustomerId);
+    const stripeSubscription = await stripe.subscriptions.retrieve(userSubscription.stripeSubscriptionId);
 
-    const stripeSession = await stripe.billingPortal.sessions.create({
-      customer: userSubscription.stripeCustomerId,
-      return_url: settingsUrl,
-    });
-
-    return NextResponse.json({ url: stripeSession.url }, { status: 200 });
+    return NextResponse.json({ customer: stripeCustomer, subscription: stripeSubscription }, { status: 200 });
   } catch (error) {
-    console.error('Error creating Stripe Customer Portal session:', error);
+    console.error('Error fetching subscription details:', error);
     return NextResponse.json({ error: 'Internal server error', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
