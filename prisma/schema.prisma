@@ -37,6 +37,8 @@ model Mind {
   messages Message[]
   // @@fulltext([name])
 
+  medias String[]
+
   @@index([categoryId])
 }
 

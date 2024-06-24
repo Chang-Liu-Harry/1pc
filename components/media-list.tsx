@@ -1,14 +1,31 @@
 "use client";
 
+import prismadb from "@/lib/prismadb";
 import { Grid } from "@radix-ui/themes";
 import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import { useState } from "react";
+import { ImageUpload } from "@/components/image-upload";
+import { useCallback, useState } from "react";
 
-export const MediaList = () => {
+interface MediaListProps {
+  chatId: string;
+}
+
+export const MediaList: React.FC<MediaListProps> = ({chatId}) => {
   const [openImage, setOpenImage] = useState('');
+  const onChange = useCallback(async (url: string) => {
+    await prismadb.mind.update({
+      where: { id: chatId },
+      data: {
+        medias: {
+          create: url
+        },
+      },
+    });
+  }, [chatId]);
+
   return (
     <div className="flex-1 px-3">
       <div className="bg-pink-200 rounded-sm">
@@ -28,6 +45,7 @@ export const MediaList = () => {
               alt=""
             />
           ))}
+          <ImageUpload onChange={onChange} value={''}/>
         </Grid>
 
         <Dialog open={!!openImage} onOpenChange={() => setOpenImage('')}>
