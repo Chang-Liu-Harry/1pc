@@ -48,6 +48,7 @@ const formSchema = z.object({
   styleTag: z.string().optional(),
   characterTag: z.string().optional(),
   customPrompt: z.string().optional(),
+  medias: z.array(z.string()).optional(),
 });
 
 interface MindFormProps {
@@ -78,6 +79,7 @@ export const MindForm = ({ categories, initialData }: MindFormProps) => {
       styleTag: "",
       characterTag: "",
       customPrompt: "", 
+      medias: [],
     },
   });
   const generateImage = async (prompt: string, styleTag: string, characterTag: string, customPrompt: string) => {
