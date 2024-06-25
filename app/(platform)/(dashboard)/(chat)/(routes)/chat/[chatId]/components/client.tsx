@@ -20,6 +20,7 @@ interface ChatClientProps {
     };
   };
   isPro: boolean;
+  isAdmin: boolean;
 }
 
 const mapMessagesToChatProps = (messages: Message[]): ChatMessageProps[] => {
@@ -30,7 +31,7 @@ const mapMessagesToChatProps = (messages: Message[]): ChatMessageProps[] => {
   }));
 };
 
-export const ChatClient = ({ mind, isPro }: ChatClientProps) => {
+export const ChatClient = ({ mind, isPro, isAdmin }: ChatClientProps) => {
   const router = useRouter();
   const proModal = useProModal();
 
@@ -73,7 +74,7 @@ export const ChatClient = ({ mind, isPro }: ChatClientProps) => {
 
   return (
     <div className="flex h-full">
-      <MediaList />
+      <MediaList mind={mind} isAdmin={isAdmin}/>
 
       <div className="w-8/12 flex flex-col h-full p-4 space-y-2">
         <ChatHeader mind={mind} isPro={isPro} />

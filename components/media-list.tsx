@@ -1,30 +1,52 @@
 "use client";
 
-import prismadb from "@/lib/prismadb";
 import { Grid } from "@radix-ui/themes";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ImageUpload } from "@/components/image-upload";
 import { useCallback, useState } from "react";
+import axios from "axios";
+import { Mind } from "@prisma/client";
+import { useRouter } from "next/navigation";
 
 interface MediaListProps {
-  chatId: string;
+  mind: Mind;
+  isAdmin: boolean;
 }
 
-export const MediaList: React.FC<MediaListProps> = ({chatId}) => {
-  const [openImage, setOpenImage] = useState('');
-  const onChange = useCallback(async (url: string) => {
-    await prismadb.mind.update({
-      where: { id: chatId },
-      data: {
-        medias: {
-          create: url
-        },
-      },
-    });
-  }, [chatId]);
+export const MediaList: React.FC<MediaListProps> = ({ mind, isAdmin }) => {
+  const [openImage, setOpenImage] = useState("");
+  const router = useRouter();
+
+  const onChange = useCallback(
+    async (url: string) => {
+      const {
+        categoryId,
+        src,
+        name,
+        description,
+        instructions,
+        seed,
+        styleTag,
+        characterTag,
+        customPrompt,
+        medias,
+      } = mind;
+      await axios.patch(`/api/mind/${mind.id}`, {
+        categoryId,
+        src,
+        name,
+        description,
+        instructions,
+        seed,
+        styleTag,
+        characterTag,
+        customPrompt,
+        medias: [...medias, url],
+      });
+      router.refresh();
+    },
+    [mind]
+  );
 
   return (
     <div className="flex-1 px-3">
@@ -36,21 +58,26 @@ export const MediaList: React.FC<MediaListProps> = ({chatId}) => {
           </h2>
         </div>
         <Grid className="p-3" columns={"3"} gap={"3"}>
-          {[1, 2, 3, 4, 5].map((i) => (
+          {mind.medias.map((i) => (
             <img
-              onClick={() => setOpenImage('https://www.lushchat.ai/_next/image?url=https%3A%2F%2Fimagedelivery.net%2F6Kja4aObvnya97est2s4Cw%2Fc66b9fd1-86c6-4c55-d360-f674f52b1300%2Fpublic&w=2048&q=75')}
+              onClick={() =>
+                setOpenImage(i)
+              }
               key={i}
-              className="rounded-sm cursor-pointer	"
-              src="https://www.lushchat.ai/_next/image?url=https%3A%2F%2Fimagedelivery.net%2F6Kja4aObvnya97est2s4Cw%2Fc66b9fd1-86c6-4c55-d360-f674f52b1300%2Fpublic&w=2048&q=75"
+              className="rounded-sm cursor-pointer object-cover"
+              src={i}
               alt=""
             />
           ))}
-          <ImageUpload onChange={onChange} value={''}/>
+          {
+            isAdmin && <ImageUpload onChange={onChange} value={""} />
+          }
+          
         </Grid>
 
-        <Dialog open={!!openImage} onOpenChange={() => setOpenImage('')}>
+        <Dialog open={!!openImage} onOpenChange={() => setOpenImage("")}>
           <DialogContent>
-            <img src={openImage}/>
+            <img src={openImage} />
           </DialogContent>
         </Dialog>
       </div>

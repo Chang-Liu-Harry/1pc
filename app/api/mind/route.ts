@@ -37,6 +37,7 @@ export async function POST(req: Request) {
         styleTag,
         characterTag,
         customPrompt,
+        medias: []
       }
     });
 
