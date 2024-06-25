@@ -1,0 +1,1 @@
+export const EIGHTEEN_CONFIRM = "EIGHTEEN_CONFIRM";
