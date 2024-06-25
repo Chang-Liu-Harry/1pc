@@ -15,6 +15,7 @@ interface ChatIdPageProps {
 const ChatIdPage = async ({
   params
 }: ChatIdPageProps) => {
+  const isAdmin = process.env.IS_ADMIN === 'true';
   const { userId } = auth();
   if (!userId) {
     return redirectToSignIn();
@@ -50,7 +51,7 @@ const ChatIdPage = async ({
   }
 
   return (
-    <ChatClient mind={mind} isPro={isPro} />
+    <ChatClient mind={mind} isPro={isPro} isAdmin={isAdmin}/>
   );
 }
 

@@ -36,7 +36,7 @@ export async function POST(req: Request) {
         styleTag,
         characterTag,
         customPrompt,
-        medias: medias || [], // Ensure medias is always an array
+        medias: []
       }
     });
 
