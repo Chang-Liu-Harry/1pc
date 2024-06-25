@@ -60,20 +60,19 @@ export const MediaList: React.FC<MediaListProps> = ({ mind, isAdmin }) => {
         <Grid className="p-3" columns={"3"} gap={"3"}>
           {mind.medias.map((i) => (
             <img
-              onClick={() =>
-                setOpenImage(i)
-              }
+              onClick={() => setOpenImage(i)}
               key={i}
               className="rounded-sm cursor-pointer object-cover"
               src={i}
               alt=""
             />
           ))}
-          {
-            isAdmin && <ImageUpload onChange={onChange} value={""} />
-          }
-          
+
+          {isAdmin && <ImageUpload onChange={onChange} value={""} />}
         </Grid>
+        {!mind.medias.length && (
+          <div className="text-center pb-6 text-slate-600">No media available</div>
+        )}
 
         <Dialog open={!!openImage} onOpenChange={() => setOpenImage("")}>
           <DialogContent>
