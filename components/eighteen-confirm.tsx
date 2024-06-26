@@ -1,12 +1,14 @@
 import { Button } from "@/components/ui/button";
-import { useEighteenConfirm } from "@/hooks/use-eighteen-confirm";
 
-export const EighteenConfirm = () => {
-  const { onConfirm } = useEighteenConfirm();
+interface EighteenConfirmProps {
+  onConfirm: () => void;
+}
+
+export const EighteenConfirm: React.FC<EighteenConfirmProps> = ({onConfirm}) => {
 
   return (
-    <div className="bg-black text-white h-screen flex justify-center items-start">
-      <div className="max-w-screen-md flex flex-col mt-28 py-16 px-8 border border-slate-800 shadow-[0_0_40px_5px_rgba(255,255,255,.15)]">
+    <div className="bg-black text-white h-screen flex justify-center items-start p-2">
+      <div className="w-full max-w-screen-md flex flex-col mt-28 py-16 px-8 border border-slate-800 shadow-[0_0_40px_5px_rgba(255,255,255,.15)]">
         <h1 className="text-center text-4xl">Onepiece AI</h1>
         <p className="text-center text-5xl mt-6 mb-4">This is an adult website</p>
         <p className="text-center text-xl text-[#ccc]">
