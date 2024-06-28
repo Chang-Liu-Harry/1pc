@@ -50,7 +50,7 @@ export const MediaList: React.FC<MediaListProps> = ({ mind, isAdmin }) => {
 
   return (
     <div className="flex-1 px-3">
-      <div className="bg-pink-200 rounded-sm">
+      <div className="bg-[#fafafa4f] rounded-sm">
         <div className="p-3 border-b border-stone-50">
           <div className="text-xl font-bold">Media</div>
           <h2 className="text-sm text-regular">
