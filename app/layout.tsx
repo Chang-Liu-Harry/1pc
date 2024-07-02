@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn("bg-secondary", inter.className)}>
+      <body className={cn(inter.className, 'bg-[linear-gradient(90deg,rgba(252,122,132,.6),rgba(101,156,123,.6))]') }>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <ProModal />
           {children}
