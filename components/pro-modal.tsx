@@ -30,7 +30,7 @@ export const ProModal = () => {
   const onSubscribe = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/stripe");
+      const response = await axios.get("/api/stripe?planId=1_month");
 
       window.location.href = response.data.url;
     } catch (error) {
@@ -58,13 +58,16 @@ export const ProModal = () => {
             To Send
             <span className="text-sky-500 mx-1 font-medium">Unlimited</span>
             Messages
+            <div><span className="text-sky-500 mx-1 font-medium">Unlimited</span>
+            Images</div>
             <div>And Create your own AI GF</div>
+            <div>View more plans on tickets page</div>
           </DialogDescription>
         </DialogHeader>
         <Separator />
         <div className="flex justify-between">
           <p className="text-2xl font-medium">
-            $19<span className="text-sm font-normal">.99 / mo</span>
+            $12<span className="text-sm font-normal">.99 / mo</span>
           </p>
           <Button onClick={onSubscribe} disabled={loading} variant="premium">
             Subscribe
