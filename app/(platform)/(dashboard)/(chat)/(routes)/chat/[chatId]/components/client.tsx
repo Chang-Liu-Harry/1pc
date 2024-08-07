@@ -89,6 +89,7 @@ export const ChatClient = ({ mind, isPro, isAdmin }: ChatClientProps) => {
           input={input}
           handleInputChange={handleInputChange}
           onSubmit={onSubmit}
+          setInput={setInput}
         />
       </div>
     </div>
