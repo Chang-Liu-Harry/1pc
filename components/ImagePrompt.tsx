@@ -24,9 +24,6 @@ export const ImagePrompt = ({ disabled, onSelect }: ImagePromptProps) => {
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="send your face image">send your face image</SelectItem>
-        <SelectItem value="nami">Nami(1pc)</SelectItem>
-        <SelectItem value="hancock">Boa Hancock(1pc)</SelectItem>
-        <SelectItem value="yamato">Yamato(1pc)</SelectItem>
       </SelectContent>
     </Select>
   );
