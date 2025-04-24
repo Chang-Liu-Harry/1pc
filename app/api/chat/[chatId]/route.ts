@@ -12,6 +12,7 @@ import { clerkClient } from "@clerk/nextjs";
 import { scheduler } from "timers/promises";
 import prisma from "@/lib/prismadb";
 import { Mind, Prisma, Role } from "@prisma/client";
+import { enhancePromptWithJokes } from "@/lib/ragUtils";
 
 
 export const maxDuration = 25;
@@ -411,7 +412,11 @@ export async function POST(request: Request, { params }: { params: { chatId: str
       }
     } else {
       console.time('Generate text');
-      const response = await generateTextMancerPro(mind,(user.username?user.username:user.id),prompt, relevantHistory);
+      const enhancedPrompt = await enhancePromptWithJokes(prompt);
+      console.log('prompt:', prompt);
+      console.log('RAGprompt:', enhancedPrompt);
+      const response = await generateTextMancerPro(mind,(user.username?user.username:user.id),enhancedPrompt, relevantHistory);
+      // const response = await generateTextMancerPro(mind,(user.username?user.username:user.id),prompt, relevantHistory);
       console.timeEnd('Generate text');
       await memoryManager.writeToHistory("" + response.trim(), mindKey);
 
