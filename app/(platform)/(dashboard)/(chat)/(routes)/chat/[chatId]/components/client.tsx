@@ -4,6 +4,7 @@ import { useCompletion } from "ai/react";
 import { FormEvent, useState } from "react";
 import { Mind, Message } from "@prisma/client";
 import { useRouter } from "next/navigation";
+import { useEighteenConfirm } from "@/hooks/use-eighteen-confirm";
 
 import { ChatForm } from "@/components/chat-form";
 import { ChatHeader } from "@/components/chat-header";
@@ -11,6 +12,7 @@ import { ChatMessages } from "@/components/chat-messages";
 import { ChatMessageProps } from "@/components/chat-message";
 import { useProModal } from "@/hooks/use-pro-modal";
 import { MediaList } from "@/components/media-list";
+import { EighteenConfirm } from "@/components/eighteen-confirm";
 
 interface ChatClientProps {
   mind: Mind & {
@@ -34,6 +36,7 @@ const mapMessagesToChatProps = (messages: Message[]): ChatMessageProps[] => {
 export const ChatClient = ({ mind, isPro, isAdmin }: ChatClientProps) => {
   const router = useRouter();
   const proModal = useProModal();
+  const { isConfirmed, onConfirm } = useEighteenConfirm();
 
   const [messages, setMessages] = useState<ChatMessageProps[]>(
     mapMessagesToChatProps(mind.messages)
@@ -72,6 +75,8 @@ export const ChatClient = ({ mind, isPro, isAdmin }: ChatClientProps) => {
     handleSubmit(e);
   };
 
+  if(!isConfirmed) return <EighteenConfirm onConfirm={onConfirm}/>;
+   
   return (
     <div className="flex h-full">
       <MediaList mind={mind} isAdmin={isAdmin}/>
@@ -84,6 +89,7 @@ export const ChatClient = ({ mind, isPro, isAdmin }: ChatClientProps) => {
           input={input}
           handleInputChange={handleInputChange}
           onSubmit={onSubmit}
+          setInput={setInput}
         />
       </div>
     </div>

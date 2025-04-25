@@ -37,7 +37,8 @@ const priceMapping: Record<string, any> = {
       name: "OnepieceAI.Chat Monthly Subscription",
       description: "Monthly Access ",
     },
-    unit_amount: 1299, // $12.99 for 1 month (12.99 * 100)
+    // unit_amount: 1299, // $12.99 for 1 month (12.99 * 100)
+    unit_amount: 1,
     recurring: {
       interval: "month",
     },
